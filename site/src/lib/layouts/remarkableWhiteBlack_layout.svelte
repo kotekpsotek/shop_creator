@@ -5,10 +5,12 @@
     import prv2 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semiblue/p1.jpg"
     import prv3 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semi-mid-blue/p1.jpg"
     
+    export let previewMode: boolean = false;
+    
     let upBarIconHeight = 30 as 32;
 </script>
 
-<div class="app">
+<div class="app" class:preview-mode={previewMode}>
     <div class="upbar">
         <button id="Menu">
             <Menu size={upBarIconHeight}/>
@@ -71,9 +73,6 @@
             </button>
         </div>
     </div>
-
-    <!-- svelte-ignore a11y-media-has-caption -->
-    <video src="https://www.lucyinthesky.com/0d1dc97c-b515-43c2-b3c7-6edff885d720"></video>
 </div>
 
 <style>
@@ -89,6 +88,11 @@
         overflow-y: auto;
         padding-left: 35px;
         padding-right: 15px;
+        background-color: white;
+    }
+
+    .app.preview-mode {
+        overflow-y: hidden;
     }
 
     .upbar {

@@ -1,7 +1,9 @@
 <script lang="ts">
     import { Image } from "carbon-icons-svelte";
+    import { goto } from "$app/navigation";
+    import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
     
-    let stepNumber = 1;
+    let stepNumber = 2;
     $: stepName = stepNumber == 1 ? "Prepare Foundaments" : (stepNumber == 2 ? "Prepare Layout" : "Preparation Finalization") 
 
     let shopTypeIsInSelecting = false;
@@ -88,6 +90,21 @@
                         </button>
                     {/if}
                 </div>
+            {:else if stepNumber == 2}
+                <h3>Layouts showcase</h3>
+                <div class="ls">
+                    <button class="shc-item" on:click={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                        <p>Remarkable White Black</p>
+                        <div class="preview">
+                            <div class="t">
+                                <p>Short preview</p>
+                            </div>
+                            <div class="p">
+                                <RemarkableWhiteBlackLayout previewMode={true}/>
+                            </div>
+                        </div>
+                    </button>
+                </div>
             {/if}
         </div>
         <div class="an-ac">
@@ -103,3 +120,10 @@
         </div>
     </div>
 </div>
+
+<style>
+    .ls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(500px, 750px));
+    }
+</style>
