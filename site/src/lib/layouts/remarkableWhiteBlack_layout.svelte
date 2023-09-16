@@ -5,8 +5,6 @@
     import prv2 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semiblue/p1.jpg"
     import prv3 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semi-mid-blue/p1.jpg"
     
-    export let previewMode: boolean = false;
-
     let upBarIconHeight = 30 as 32;
 </script>
 
