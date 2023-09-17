@@ -1,7 +1,5 @@
 <script lang="ts">
-    import { Input, Label, Helper, Button, Checkbox, A } from 'flowbite-svelte';    
     import { Email, View, ViewOff } from 'carbon-icons-svelte';
-    import type { FormEventHandler } from 'svelte/elements';
 
     let form: HTMLFormElement;
 
@@ -21,53 +19,105 @@
         }
     }
 
-    function beforeSubmit(ev: Event) {
+    async function beforeSubmit(ev: Event) {
         ev.preventDefault();
-        const p = (document.getElementById("password")! as HTMLInputElement).value;
-        const pC = (document.getElementById("confirm_password")! as HTMLInputElement).value;
+        const p = (document.getElementsByName("password")[0] as HTMLInputElement).value;
+        const pC = (document.getElementsByName("password-check")[0] as HTMLInputElement).value;
 
         if (p == pC) {
-            form.submit();
+            // form.submit();
         }
         else alert("Password and password check values aren't the same!");
     }
+
+    let canSubmit = false;
+
+    function whetherCanSubmit(): boolean {
+        const email = (document.getElementsByName("email")[0] as HTMLInputElement).value;
+        const password = (document.getElementsByName("password")[0] as HTMLInputElement).value;
+        const passwordCheck = (document.getElementsByName("password-check")[0] as HTMLInputElement).value;
+
+        const emailC = email.trim().includes("@") && email.trim().split("@").length == 2; // Check email
+        return emailC && password.length >= 10 && password.length <= 36 && passwordCheck == password;
+    }
+
+    setInterval(() => canSubmit = whetherCanSubmit(), 250)
 </script>
 
-<form action="http://localhost:8100/signup" method="post" bind:this={form} on:submit={beforeSubmit}>
-    <div class="bilboard">
-        <div class="mb-6">
-            <Label for="email" class="mb-2">Email</Label>
-            <Input type="email" name="em" id="email" placeholder="youremail@email.com" required>
-                <Email slot="left"/>
-            </Input>
+<form action="http://localhost:8100/signup" class="w-full h-screen flex justify-center items-center" method="post" bind:this={form} on:submit={beforeSubmit}>
+    <div class="card p-4 variant-ghost-secondary h-fit w-4/5 lg:w-2/5 flex flex-col gap-y-2">
+        <h2 class="h2 font-semibold mb-2">Signup</h2>
+        <div class="flex flex-col gap-y-1">
+            <p class="text-sm pl-2 font-thin">Email</p>
+            <div class="input-group input-group-divider grid-cols-[auto_2fr_auto] h-9">
+                <div class="input-group-shim"><Email/></div>
+                <input class="px-2" type="text" name="email" placeholder="Email"/>
+            </div>
         </div>
-        <div class="mb-6">
-            <Label for="password" class="mb-2">Password</Label>
-            <Input type="{showPass ? "text" : "password"}" name="ps" minlength="10" maxlength="36" id="password" placeholder="•••••••••" required>
-                <button slot="left" on:click={showHide("pass")}>
+        <div class="flex flex-col gap-y-1">
+            <p class="text-sm pl-2 font-thin">Password</p>
+            <div class="input-group input-group-divider grid-cols-[auto_2fr_auto] h-9">
+                <button class="input-group-shim" on:click={showHide("pass")}>
                     {#if showPass}
                         <View/>
                     {:else}
                         <ViewOff/>
                     {/if}
                 </button>
-            </Input>
+                <input class="px-2" name="password" minlength="10" maxlength="36" type="{showPass ? "text" : "password"}" placeholder="Password"/>
+            </div>
         </div>
-        <div class="mb-6">
-            <Label for="confirm_password" class="mb-2">Confirm password</Label>
-            <Input type="{showPassChck ? "text" : "password"}" minlength="10" maxlength="36" id="confirm_password" placeholder="•••••••••" required>
-                <button slot="left" on:click={showHide("pass-chck")}>
+        <div class="flex flex-col gap-y-1">
+            <p class="text-sm pl-2 font-thin">Password check</p>
+            <div class="input-group input-group-divider grid-cols-[auto_2fr_auto] h-9">
+                <button class="input-group-shim" on:click={showHide("pass-chck")}>
                     {#if showPassChck}
                         <View/>
                     {:else}
                         <ViewOff/>
                     {/if}
                 </button>
-            </Input>
+                <input class="px-2" name="password-check" minlength="10" maxlength="36" type="{showPassChck ? "text" : "password"}" placeholder="Password Check"/>
+            </div>
         </div>
-        <Checkbox class="mb-6 space-x-1" required>
-            I agree with the <A href="/" class="text-primary-700 dark:text-primary-600 hover:underline">terms and conditions</A>.
-        </Checkbox>
-        <Button type="submit">Submit</Button>
+        <div class="submit flex justify-end mt-2">
+            <button disabled={!canSubmit} type="submit" class="btn bg-gradient-to-br variant-gradient-secondary-primary text-white px-10">Button</button>
+        </div>
+        <!-- <div class="bilboard">
+            <div class="mb-6">
+                <Label for="email" class="mb-2">Email</Label>
+                <Input type="email" name="em" id="email" placeholder="youremail@email.com" required>
+                    <Email slot="left"/>
+                </Input>
+            </div>
+            <div class="mb-6">
+                <Label for="password" class="mb-2">Password</Label>
+                <Input type="{showPass ? "text" : "password"}" name="ps" minlength="10" maxlength="36" id="password" placeholder="•••••••••" required>
+                    <button slot="left" on:click={showHide("pass")}>
+                        {#if showPass}
+                            <View/>
+                        {:else}
+                            <ViewOff/>
+                        {/if}
+                    </button>
+                </Input>
+            </div>
+            <div class="mb-6">
+                <Label for="confirm_password" class="mb-2">Confirm password</Label>
+                <Input type="{showPassChck ? "text" : "password"}" minlength="10" maxlength="36" id="confirm_password" placeholder="•••••••••" required>
+                    <button slot="left" on:click={showHide("pass-chck")}>
+                        {#if showPassChck}
+                            <View/>
+                        {:else}
+                            <ViewOff/>
+                        {/if}
+                    </button>
+                </Input>
+            </div>
+            <Checkbox class="mb-6 space-x-1" required>
+                I agree with the <A href="/" class="text-primary-700 dark:text-primary-600 hover:underline">terms and conditions</A>.
+            </Checkbox>
+            <Button type="submit">Submit</Button>
+        </div> -->
     </div>
 </form>

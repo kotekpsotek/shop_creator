@@ -3,18 +3,25 @@
     import { goto } from "$app/navigation";
     import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
     
+    type FashionLayouts = "remarkable-blackwhite";
+    
     let stepNumber = 2;
-    $: stepName = stepNumber == 1 ? "Prepare Foundaments" : (stepNumber == 2 ? "Prepare Layout" : "Preparation Finalization") 
+    $: stepName = stepNumber == 1 ? "Prepare Foundaments" : (stepNumber == 2 ? "Prepare Layout" : (stepNumber == 3 ? "Billing preparation" : "Preparation Finalization")) 
 
     let shopTypeIsInSelecting = false;
     let shopType: undefined | string;
     let shopTitle: string | undefined;
     let showUnselectCapability = false;
     let files: FileList | undefined;
+    let pickupLayout: FashionLayouts | undefined = undefined;
+
     function allowGoAhead() {
         if (stepNumber == 1) {
             const stL = (shopTitle?.trim() || "").length || 0;
             return (shopType?.length || 0) != 0 && (stL >= 5 && stL <= 30) && (files || []).length != 0;
+        } else if (stepNumber == 2) {
+            console.log("al", typeof pickupLayout != "undefined")
+            return typeof pickupLayout != "undefined";
         }
 
         return false;
@@ -50,6 +57,12 @@
 
     function goToPreviousStep() {
         stepNumber -= 1;
+    }
+
+    function pickLayout(choosen: FashionLayouts) {
+        return (ev: Event) => {
+            pickupLayout = choosen;
+        };
     }
 </script>
 
@@ -93,7 +106,7 @@
             {:else if stepNumber == 2}
                 <h3>Layouts showcase</h3>
                 <div class="ls">
-                    <button class="shc-item" on:click={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                    <button class="shc-item" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
                         <p>Remarkable White Black</p>
                         <div class="preview">
                             <div class="t">
@@ -105,11 +118,14 @@
                         </div>
                     </button>
                 </div>
+            {:else if stepNumber == 3}
+                <!-- Payments support bank card code needed -->
+                
             {/if}
         </div>
         <div class="an-ac">
             <p>{stepNumber}/3</p>
-            {#key shopType && shopTitle && files}
+            {#key (shopType && shopTitle && files) || pickupLayout}
                 {#if stepNumber != 3}
                     <button disabled={!allowGoAhead()} on:click={goToNextStep}>Next</button>
                 {/if}
