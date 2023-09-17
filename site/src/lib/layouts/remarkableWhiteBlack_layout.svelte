@@ -79,6 +79,7 @@
     * {
         margin: 0;
         padding: 0;
+        color: black;
     }
 
     .app {
