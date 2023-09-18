@@ -22,10 +22,10 @@
     async function beforeSubmit(ev: Event) {
         ev.preventDefault();
         const p = (document.getElementsByName("password")[0] as HTMLInputElement).value;
-        const pC = (document.getElementsByName("password-check")[0] as HTMLInputElement).value;
+        const pC = (document.getElementById("password-check") as HTMLInputElement).value;
 
         if (p == pC) {
-            // form.submit();
+            form.submit();
         }
         else alert("Password and password check values aren't the same!");
     }
@@ -35,7 +35,7 @@
     function whetherCanSubmit(): boolean {
         const email = (document.getElementsByName("email")[0] as HTMLInputElement).value;
         const password = (document.getElementsByName("password")[0] as HTMLInputElement).value;
-        const passwordCheck = (document.getElementsByName("password-check")[0] as HTMLInputElement).value;
+        const passwordCheck = (document.getElementById("password-check") as HTMLInputElement).value;
 
         const emailC = email.trim().includes("@") && email.trim().split("@").length == 2; // Check email
         return emailC && password.length >= 10 && password.length <= 36 && passwordCheck == password;
@@ -77,7 +77,7 @@
                         <ViewOff/>
                     {/if}
                 </button>
-                <input class="px-2" name="password-check" minlength="10" maxlength="36" type="{showPassChck ? "text" : "password"}" placeholder="Password Check"/>
+                <input class="px-2" id="password-check" minlength="10" maxlength="36" type="{showPassChck ? "text" : "password"}" placeholder="Password Check"/>
             </div>
         </div>
         <div class="submit flex justify-end mt-2">
