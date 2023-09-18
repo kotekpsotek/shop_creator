@@ -23,20 +23,22 @@
 {#key $navigating}
     <!-- TODO: Styles -->
     {#if !new URL(document.URL).pathname.includes("layouts_preview")}
-        <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
-            <svelte:fragment slot="lead">(icon)</svelte:fragment>
-            <h1>My Shop Creator</h1>
-            <svelte:fragment slot="trail">
-                <div class="trail-ac">
-                    <button class="account p-1 rounded" class:variant-ghost-tertiary={accountBiblord} on:click={_ => accountBiblord = !accountBiblord}>
-                        <UserAvatarFilled size={32}/>
-                    </button>
-                    <button class="menu p-1 rounded">
-                        <OverflowMenuHorizontal size={32}/>
-                    </button>
-                </div>
-            </svelte:fragment>
-        </AppBar>
+        <div class="w-full sticky top-0 right-0">
+            <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
+                <svelte:fragment slot="lead">(icon)</svelte:fragment>
+                <h1>My Shop Creator</h1>
+                <svelte:fragment slot="trail">
+                    <div class="trail-ac">
+                        <button class="account p-1 rounded" class:variant-ghost-tertiary={accountBiblord} on:click={_ => accountBiblord = !accountBiblord}>
+                            <UserAvatarFilled size={32}/>
+                        </button>
+                        <button class="menu p-1 rounded">
+                            <OverflowMenuHorizontal size={32}/>
+                        </button>
+                    </div>
+                </svelte:fragment>
+            </AppBar>
+        </div>
         {#if accountBiblord}
             <div class="card p-2 w-fit shadow-xl absolute top-50 right-0">
                 <nav class="list-nav">
