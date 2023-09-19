@@ -4,6 +4,9 @@ import type { Config } from 'tailwindcss';
 // 1. Import the Skeleton plugin
 import { skeleton } from '@skeletonlabs/tw-plugin';
 
+// Import Forms plugin for tailwindcss
+import forms from "@tailwindcss/forms"
+
 const config = {
 	// 2. Opt for dark mode to be handled via the class method
 	darkMode: 'class',
@@ -21,7 +24,8 @@ const config = {
 	plugins: [
 		skeleton({
 			themes: { preset: [ "wintry" ] }
-		})
+		}),
+		forms
 	]
 } satisfies Config;
 
