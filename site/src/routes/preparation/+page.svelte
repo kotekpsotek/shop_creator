@@ -66,9 +66,9 @@
     }
 </script>
 
-<div class="bckg">
-    <div class="setps">
-        <h2>{stepName}</h2>
+<div class="bckg p-5">
+    <div class="setps flex flex-col mt-5">
+        <h2 class="badge variant-soft-secondary font-normal w-fit gap-y-5">{stepName}</h2>
         <div class="cmn-ac">
             {#if stepNumber == 1}
                 <div class="slel">
@@ -104,15 +104,48 @@
                     {/if}
                 </div>
             {:else if stepNumber == 2}
-                <h3>Layouts showcase</h3>
-                <div class="ls">
-                    <button class="shc-item" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
-                        <p>Remarkable White Black</p>
-                        <div class="preview">
-                            <div class="t">
-                                <p>Short preview</p>
+                <h1 class="h1 font-bold">Layouts showcase</h1>
+                <div class="ls mt-5">
+                    <button class="p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                        <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
+                        <div class="preview flex flex-col gap-y-2">
+                            <div class="w-full">
+                                <p class="text-start text-base font-normal bg-gradient-to-br from-blue-500 to-cyan-300 bg-clip-text text-transparent box-decoration-clone capitalize">Short preview:</p>
                             </div>
-                            <div class="p">
+                            <div class="p h-96">
+                                <RemarkableWhiteBlackLayout previewMode={true}/>
+                            </div>
+                        </div>
+                    </button>
+                    <button class="p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                        <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
+                        <div class="preview flex flex-col gap-y-2">
+                            <div class="w-full">
+                                <p class="text-start text-base font-normal bg-gradient-to-br from-blue-500 to-cyan-300 bg-clip-text text-transparent box-decoration-clone capitalize">Short preview:</p>
+                            </div>
+                            <div class="p h-96">
+                                <RemarkableWhiteBlackLayout previewMode={true}/>
+                            </div>
+                        </div>
+                    </button>
+                    <button class="p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                        <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
+                        <div class="preview flex flex-col gap-y-2">
+                            <div class="w-full">
+                                <p class="text-start text-base font-normal bg-gradient-to-br from-blue-500 to-cyan-300 bg-clip-text text-transparent box-decoration-clone capitalize">Short preview:</p>
+                            </div>
+                            <div class="p h-96">
+                                <RemarkableWhiteBlackLayout previewMode={true}/>
+                            </div>
+                        </div>
+                    </button>
+                    <button class="p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                        <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
+                        <div class="preview flex flex-col gap-y-2">
+                            <div class="w-full">
+                                <p class="text-start text-base font-normal bg-gradient-to-br from-blue-500 to-cyan-300 bg-clip-text text-transparent box-decoration-clone capitalize">Short preview:</p>
+                            </div>
+                            <div class="p h-96">
                                 <RemarkableWhiteBlackLayout previewMode={true}/>
                             </div>
                         </div>
@@ -140,6 +173,13 @@
 <style>
     .ls {
         display: grid;
-        grid-template-columns: repeat(2, minmax(500px, 750px));
+        grid-template-columns: minmax(100px, 500px);
+        gap: 10px;
+    }
+
+    @media only screen and (min-width: 500px) {
+        .ls {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 500px));
+        }
     }
 </style>
