@@ -3,10 +3,11 @@
     import { goto } from "$app/navigation";
     import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
     import { Stepper, Step } from '@skeletonlabs/skeleton';
+    import stripeLogo from "$lib/stripe-logo.svg"
     
     type FashionLayouts = "remarkable-blackwhite";
     
-    let stepNumber = 1;
+    let stepNumber = 2;
     $: stepName = stepNumber == 0 ? "Prepare Foundaments" : (stepNumber == 1 ? "Prepare Layout" : (stepNumber == 2 ? "Billing preparation" : "Preparation Finalization"));
 
     
@@ -104,7 +105,7 @@
 </script>
 
 <div class="bckg p-5">
-    <Stepper start={1} on:next={goToNextStep} on:back={goToPreviousStep}>
+    <Stepper start={2} on:next={goToNextStep} on:back={goToPreviousStep}>
         <Step {locked}>
             <svelte:fragment slot="header">
                 <h2 class="badge variant-soft-secondary font-normal w-fit gap-y-5">{stepName}</h2>
@@ -177,8 +178,26 @@
             </div>
         </Step>
         <Step {locked}>
-            <svelte:fragment slot="header">(header)</svelte:fragment>
-            (content)
+            <svelte:fragment slot="header">
+                <h2 class="badge variant-soft-secondary font-normal w-fit">{stepName}</h2>
+            </svelte:fragment>
+            <div class="card variant-soft p-2 flex flex-col gap-y-5">
+                <div class="head">
+                    <h3 class="h3 font-bold">Connect with 
+                        <span class="text-success-200">Stripe</span> 
+                        account
+                    </h3>
+                    <p class="font-serif">
+                        <span class="text-success-100">Stripe</span> 
+                        is platform by which we make all payments and payouts
+                    </p>
+                </div>
+                <button class="btn variant-soft-tertiary w-60">
+                    <p>Connect with</p>
+                    <img src="{stripeLogo}" alt="" class="w-14 h-8">
+                    <p>now</p>
+                </button>
+            </div>
         </Step>
         <!-- ... -->
     </Stepper>
