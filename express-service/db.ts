@@ -12,14 +12,16 @@ export interface User {
     email: String,
     password: string,
     date: Date,
-    uuid: String 
+    uuid: String ,
+    stripe_account_id: string,
 }
 
 const usersSchema = new Schema<User>({
     email: { type: SchemaTypes.String, required: true, unique: true },
     password: { type: SchemaTypes.String, required: true },
     date: { type: Date, default: () => new Date() },
-    uuid: { type: String, default: () => randomUUID(), unique: true }
+    uuid: { type: String, default: () => randomUUID(), unique: true },
+    stripe_account_id: { type: String, required: false }
 }, {
     strict: true, // Don't allow to use not defined keys in shema
 });

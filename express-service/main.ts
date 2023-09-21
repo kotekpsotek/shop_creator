@@ -1,15 +1,22 @@
+import dotenv from "dotenv";
+dotenv.config({
+    path: "./.env",
+});
+
 import express from "express";
 import cors from "cors";
 import { createHash } from "crypto";
 import * as db from "./db"
 import session from "express-session";
+import cookieParser from "cookie-parser";
 import RedisStore from "connect-redis";
 import payments from "./payments"
 
 declare module "express-session" {
     interface SessionData {
         logged: boolean;
-        cd: any
+        /** User uid */
+        uuid: string
     }
 }
 
@@ -21,6 +28,7 @@ const storeRedis = new RedisStore({
 });
 
 app.set("x-powered-by", false);
+app.use(cookieParser())
 app.use(cors({
     origin: "http://localhost:5173",
     credentials: true
@@ -41,7 +49,7 @@ app.use(session({
 app.use((req, res, nxt) => {
     res.setHeader("x-powered-by", "my own idea");
     nxt()
-})
+});
 
 // Entire app
 app.post("/signup", async (req, res) => {
@@ -87,7 +95,6 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(req.body)
 
     const userEx = await db.mUsers.findOne({ email });
 
@@ -99,13 +106,33 @@ app.post("/login", async (req, res) => {
     // Action
     if (userEx && userEx.password == passwordHash) {
         req.session.logged = true;
+        req.session.uuid = userEx.uuid as string;
         res.redirect("http://localhost:5173/account/login?logged="+req.sessionID); // Create one time identifier as replacement for 'sessionID'
     }
     else res.redirect("http://localhost:5173/account/login?status=401");
 });
 
+// Handle actions only for logged in users 
+// For call all actions below: User must be firstly logged in
+app.use(async (req, res, xt) => {
+    // Parse cookie from other domain with session id
+    const cookie = req.cookies["session-app-frontend"];
+    if (cookie) {
+        const sessId = atob(cookie);
+        storeRedis.get(sessId, (_, data) => {
+            req.session.reload(() => void undefined);
+
+            if (data?.logged) {
+                req.session = Object.assign(req.session, data);
+                xt();
+            }
+            else res.sendStatus(401)
+        });
+    };
+})
+
 // Handle all what is coupled with payments
-app.use(["payments", "payments-api"], payments);
+app.use(["/payments", "/payments-api"], payments);
 
 app.listen(8100, () => {
     console.log("App listen on port: ", port)

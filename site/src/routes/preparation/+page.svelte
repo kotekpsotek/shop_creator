@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { Image } from "carbon-icons-svelte";
     import { goto } from "$app/navigation";
     import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
@@ -10,6 +11,13 @@
     let stepNumber = 2;
     $: stepName = stepNumber == 0 ? "Prepare Foundaments" : (stepNumber == 1 ? "Prepare Layout" : (stepNumber == 2 ? "Billing preparation" : "Preparation Finalization"));
 
+    let alertDisp = false;
+    onMount(() => {
+        const u = new URL(document.URL);
+        if (u.searchParams.has("return")) {
+            // TODO: Check
+        }
+    });
     
     let shopTypeIsInSelecting = false;
     let shopType: undefined | string;
@@ -102,6 +110,19 @@
             };
         };
     }
+
+    async function connectWithStripe() {
+        const bck = await fetch("http://localhost:8100/payments/connect-shop", {
+            method: "post",
+            credentials: "include",
+        });
+
+        if (bck.status == 200) {
+            const { r_url } = await bck.json();
+            window.location.assign(r_url);
+        }
+        else alert("Cannot perform 'connect account action' via Stripe")
+    }
 </script>
 
 <div class="bckg p-5">
@@ -192,12 +213,24 @@
                         is platform by which we make all payments and payouts
                     </p>
                 </div>
-                <button class="btn variant-soft-tertiary w-60">
+                <button class="btn variant-soft-tertiary w-60" on:click={connectWithStripe}>
                     <p>Connect with</p>
                     <img src="{stripeLogo}" alt="" class="w-14 h-8">
                     <p>now</p>
                 </button>
             </div>
+            {#if alertDisp}
+                <aside class="alert variant-filled-secondary">
+                    <!-- Icon -->
+                    <div>
+                        🔎
+                    </div>
+                    <!-- Message -->
+                    <div class="alert-message">
+                        
+                    </div>
+                </aside>
+            {/if}
         </Step>
         <!-- ... -->
     </Stepper>
