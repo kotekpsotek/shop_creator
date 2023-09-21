@@ -87,6 +87,7 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
+    console.log(req.body)
 
     const userEx = await db.mUsers.findOne({ email });
 
@@ -98,10 +99,9 @@ app.post("/login", async (req, res) => {
     // Action
     if (userEx && userEx.password == passwordHash) {
         req.session.logged = true;
-        // res.sendStatus(200)
-        res.redirect("http://localhost:5174/logged=true");
+        res.redirect("http://localhost:5173/account/login?logged="+req.sessionID); // Create one time identifier as replacement for 'sessionID'
     }
-    else res.redirect("http://localhost:5174/account/login?status=401");
+    else res.redirect("http://localhost:5173/account/login?status=401");
 });
 
 // Handle all what is coupled with payments
