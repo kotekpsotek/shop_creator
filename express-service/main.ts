@@ -66,8 +66,15 @@ app.post("/signup", async (req, res) => {
     }
 
     function varyPassword() {
+        const matchBy = (term: RegExpMatchArray | null) => {
+            if (!term || !term.length) {
+                return []
+            }
+
+            return term;
+        };
         if (password) {
-            return password.length >= 10 && password.length <= 36 && password.match(/\d/g)!.length >= 1 && password.match(/[a-z]/g)!.length >= 1 && password.match(/[A-Z]/g)!.length >= 1; 
+            return password.length >= 10 && password.length <= 36 && matchBy(password.match(/\d/g)).length >= 1 && matchBy(password.match(/[a-z]/g)).length >= 1 && matchBy(password.match(/[A-Z]/g)).length >= 1; 
         }
 
         return false;
@@ -128,7 +135,8 @@ app.use(async (req, res, xt) => {
             }
             else res.sendStatus(401)
         });
-    };
+    }
+    else if (!cookie && !req.session.logged) res.sendStatus(401);
 })
 
 // Handle all what is coupled with payments
