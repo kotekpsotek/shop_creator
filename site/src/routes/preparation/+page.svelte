@@ -102,10 +102,27 @@
         }
     }
 
+    /** Emphesize selected layout when was selected about which testifies occurance in $shopCreationStore latout name */
+    function loadSelectedLayout(node: HTMLDivElement) {
+        const shopLayouts = node.getElementsByTagName("button");
+
+        for (const layout of shopLayouts) {
+            const lName = layout.getAttribute("data-layout-name");
+            if (lName == $shopCreationStore.layout) {
+                // Assign selection style
+                layout.classList.remove("variant-ringed");
+                layout.classList.add("variant-soft-primary");
+
+                // Allow user go to next stage by execute using Svelte reactivity allowGoAhead function from Svelte Reactive Code block. This Svelte Reactive block listen for changes in $shopCreationStore
+                $shopCreationStore = $shopCreationStore;
+            }
+        }
+    }
+
     function allowGoAhead() {
         if (stepNumber == 0) {
             const stL = ($shopCreationStore.name?.trim() || "").length || 0;
-            return ($shopCreationStore.shop_type?.length || 0) != 0 && (stL >= 5 && stL <= 30) && ((files || []).length != 0 || $shopCreationStore.logo);
+            return ($shopCreationStore.shop_type?.length || 0) != 0 && (stL >= 5 && stL <= 30) && ((files || []).length != 0 || $shopCreationStore.logo != undefined);
         } else if (stepNumber == 1) {
             return typeof $shopCreationStore.layout != "undefined";
         } else if (stepNumber == 2) {
@@ -276,8 +293,8 @@
                 <h2 class="badge variant-soft-secondary font-normal w-fit">{stepName}</h2>
             </svelte:fragment>
             <h1 class="h1 font-bold">Layouts showcase</h1>
-            <div class="ls mt-5">
-                <button class="layout-btn p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+            <div class="ls mt-5" use:loadSelectedLayout>
+                <button class="layout-btn p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" data-layout-name="remarkable-blackwhite" on:click={pickLayout("remarkable-blackwhite")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
                     <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
                     <div class="preview flex flex-col gap-y-2">
                         <div class="w-full">
@@ -288,7 +305,7 @@
                         </div>
                     </div>
                 </button>
-                <button class="layout-btn p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" on:click={pickLayout("ot")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
+                <button class="layout-btn p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" data-layout-name="ot" on:click={pickLayout("ot")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
                     <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
                     <div class="preview flex flex-col gap-y-2">
                         <div class="w-full">
