@@ -5,7 +5,7 @@ dotenv.config({
 
 import express from "express";
 import cors from "cors";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import * as db from "./db"
 import session from "express-session";
 import cookieParser from "cookie-parser";
@@ -141,6 +141,30 @@ app.use(async (req, res, xt) => {
 
 // Handle all what is coupled with payments
 app.use(["/payments", "/payments-api"], payments);
+
+// Create shop
+app.post("/create-shop", async (req, res) => {
+    const { name, logo, shop_type, layout } = req.body;
+
+    if (name && logo && shop_type && layout) {
+        /** Check: shop exists, existing shop has got this layout */
+        function shopCorrectennes(): boolean {
+            const combinations: Record<string, string[]> = {
+                fashion: ["layout 1"]
+            }
+
+            return combinations[shop_type]?.includes(layout) ? true : false;
+        }
+
+        if (shopCorrectennes()) {
+            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [(randomUUID()), req.session.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
+
+            res.status(200).end();
+        }
+        else res.sendStatus(400);
+    }
+    else res.sendStatus(400);
+});
 
 app.listen(8100, () => {
     console.log("App listen on port: ", port)
