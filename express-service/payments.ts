@@ -8,11 +8,10 @@ const stripe = new Stripe(process.env.STRIPE_API_SECRET as string, {
 })
 const router = Router();
 
-const stripeAcId = new Map();
-
 router.post("/connect-shop", async (req, res) => {
     const body = req.body;
-    const userData = await mUsers.findOne({ uuid: req.session.uuid });
+    const ses = res.locals.appSes; // In this way because intialized express-session by call req.session create other session object in database duplicate in this already existing created durning login
+    const userData = await mUsers.findOne({ uuid: ses.uuid });
 
     // Initialize connect
     if (userData) {
@@ -24,7 +23,7 @@ router.post("/connect-shop", async (req, res) => {
                     type: 'standard',
                     email: userData.email as string,
                     metadata: {
-                        uuid: req.session.uuid as string
+                        uuid: ses.uuid as string
                     }
                 });
 

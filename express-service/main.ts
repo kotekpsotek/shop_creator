@@ -130,13 +130,17 @@ app.use(async (req, res, xt) => {
             req.session.reload(() => void undefined);
 
             if (data?.logged) {
-                req.session = Object.assign(req.session, data);
+                // FIXME: Should be commented to do not ceate same session for one user both times: 1 - Durning login, 2 - durning receive "session-app-frontend" cookie // req.session = Object.assign(req.session, data); // Assign this send to user express-session cookie which is independent from "session-app-frontend"
+                res.locals.appSes = data; // In this way because intialized express-session by call req.session create other session object in database duplicate in this already existing created durning login
                 xt();
             }
             else res.sendStatus(401)
         });
     }
-    else if (!cookie && !req.session.logged) res.sendStatus(401);
+    else if (req.session.logged) {
+        xt();
+    }
+    else if (!cookie) res.sendStatus(401);
 })
 
 // Handle all what is coupled with payments
@@ -150,14 +154,14 @@ app.post("/create-shop", async (req, res) => {
         /** Check: shop exists, existing shop has got this layout */
         function shopCorrectennes(): boolean {
             const combinations: Record<string, string[]> = {
-                fashion: ["layout 1"]
+                fashion: ["remarkable-blackwhite"]
             }
 
             return combinations[shop_type]?.includes(layout) ? true : false;
         }
 
         if (shopCorrectennes()) {
-            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [(randomUUID()), req.session.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
+            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [(randomUUID()), res.locals.appSes.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
 
             res.status(200).end();
         }
