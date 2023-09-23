@@ -242,6 +242,7 @@
                 });
         
                 loading = undefined;
+                console.log(f.status)
                 if (f.status != 200) {
                     stripeConnectSate = { notAllow: true, m: "Stripe and we couldn't collect all required informations to perform payouts for you" };
                 }
@@ -257,8 +258,34 @@
         })()
     }
 
-    function completeShopCreation() {
+    async function completeShopCreation() {
         // TODO: Save shop datas, Redirect to final page
+        try {
+            const call = await fetch("http://localhost:8100/create-shop", { 
+                method: "POST",
+                headers: {
+                    'content-type': 'application/json'
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    name: $shopCreationStore.name,
+                    logo: $shopCreationStore.logo,
+                    shop_type: $shopCreationStore.shop_type,
+                    layout: $shopCreationStore.layout
+                })
+            });
+
+            if (call.status == 200) {
+                // Redirect user to finish page
+                await goto("/preparation/final");
+            }
+            else {
+                alert("Cannot create your shop from some reason!")
+            }
+        }
+        catch(err) {
+            alert("Cannot complete shop creation by capture a error")
+        }
     }
 </script>
 

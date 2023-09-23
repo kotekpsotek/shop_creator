@@ -5,12 +5,14 @@ dotenv.config({
 
 import express from "express";
 import cors from "cors";
+import fs from "fs";
 import { createHash, randomUUID } from "crypto";
 import * as db from "./db"
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import RedisStore from "connect-redis";
 import payments from "./payments"
+import { should } from "vitest";
 
 declare module "express-session" {
     interface SessionData {
@@ -34,7 +36,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use(express.json({ limit: "3.5mb" }));
 app.use(session({
     name: "sess",
     store: storeRedis as any,
@@ -148,9 +150,21 @@ app.use(["/payments", "/payments-api"], payments);
 
 // Create shop
 app.post("/create-shop", async (req, res) => {
-    const { name, logo, shop_type, layout } = req.body;
+    const { name, logo, shop_type, layout }: { name: string, shop_type: string, logo: { mime: string, cnt: Record<string, number>, name: string }, layout: string } = req.body;
+    const affordableMimes = ["image/svg+xml", "image/jpeg", "image/png", "image/webp", "image/gif"];
+    const ext: { [id: string]: string } = {
+        "image/svg+xml": "svg",
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp"
+    }
+    function checkLogo() {
+        const maximumSizeOfLogoMb = 3.5;
+        
+        return logo != undefined && affordableMimes.includes(logo.mime) && (Object.entries(logo.cnt).length / 1_048_576 <= maximumSizeOfLogoMb);
+    }
 
-    if (name && logo && shop_type && layout) {
+    if (name && checkLogo() && shop_type && layout) {
         /** Check: shop exists, existing shop has got this layout */
         function shopCorrectennes(): boolean {
             const combinations: Record<string, string[]> = {
@@ -161,7 +175,13 @@ app.post("/create-shop", async (req, res) => {
         }
 
         if (shopCorrectennes()) {
-            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [(randomUUID()), res.locals.appSes.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
+            const shopId = randomUUID();
+            
+            // Save into database
+            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [should, res.locals.appSes.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
+
+            // Save image -> Yes size and mime of type is checking before save TODO: check file container also to prevent SSRF
+            fs.writeFileSync(`./temp/shop-logo-${shopId}.${ext[logo.mime]}`, Buffer.from(Object.values(logo.cnt)));
 
             res.status(200).end();
         }
