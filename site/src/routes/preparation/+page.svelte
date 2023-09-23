@@ -41,13 +41,18 @@
         }
     }
     // onMount(redirectFromStripeHandle);
-    $: if (stepNumber == 2) {
-        redirectFromStripeHandle();
-    }
     
     let shopTypeIsInSelecting = false;
     let showUnselectCapability = false;
     let files: FileList | undefined;
+    
+    $: if (stepNumber == 2) {
+        redirectFromStripeHandle();
+    } /* else if (stepNumber == 0) {
+        if ((!files || !files.length)) {
+            loadLogoPreviewImageFromStore();
+        }
+    }; */
 
     // Lock state whether is activated
     let locked: boolean = true;
@@ -60,11 +65,12 @@
     // All things connected with shop state storage
     onMount(() => {
         window.addEventListener("pageshow", shopCreationStore.load);
-        shopCreationStore.load()
+        window.addEventListener("reset", shopCreationStore.save);
+        window.addEventListener("pagehide", shopCreationStore.save);
+        shopCreationStore.load();
     });
 
     onDestroy(() => {
-        window.addEventListener("pagehide", shopCreationStore.save);
         shopCreationStore.save();
     });
 
@@ -80,10 +86,26 @@
     }
 
     // Functions
+    /** Load image from localStorage saved durning last shop creation (only when data wasn't deletd after successfull creation) */
+    function loadLogoPreviewImageFromStore() {
+        if ($shopCreationStore.logo) {
+            const img = document.getElementById("preview-logo")! as HTMLImageElement;
+            // TODO: Action of 'Repair invalid parsed from JSON bytes list' shold happed in place where is loaded so in file './src/lib/inter_stores.ts' within its 'shopCreationStore' 'load' method
+            const cnt = new Uint8Array(Object.values($shopCreationStore.logo.cnt)); // After save into localStorage as JSON Uint8Array as default type of saved data is converted to Object with key-value pairs like: { 0: 123, 1: 255, etc... }
+            $shopCreationStore.logo = { ...$shopCreationStore.logo, cnt }; // Resave repaired Uint8Array content
+            
+            const newFile = new File([cnt.buffer], $shopCreationStore.logo.name, { // Create file instance for re-created bytes storage which consist from numbers writed under unsiged 8 bits Base-2 numbers range
+                type: $shopCreationStore.logo.mime
+            });
+            
+            img.src = URL.createObjectURL(newFile); // Create preview using url which reference to blob in browswer memory
+        }
+    }
+
     function allowGoAhead() {
         if (stepNumber == 0) {
             const stL = ($shopCreationStore.name?.trim() || "").length || 0;
-            return ($shopCreationStore.shop_type?.length || 0) != 0 && (stL >= 5 && stL <= 30) && (files || []).length != 0;
+            return ($shopCreationStore.shop_type?.length || 0) != 0 && (stL >= 5 && stL <= 30) && ((files || []).length != 0 || $shopCreationStore.logo);
         } else if (stepNumber == 1) {
             return typeof $shopCreationStore.layout != "undefined";
         } else if (stepNumber == 2) {
@@ -100,21 +122,27 @@
     }
 
     function unselectLogo() {
-        files = undefined
+        files = undefined;
+        $shopCreationStore.logo = undefined;
+        showUnselectCapability = false;
     }
 
     function loadLogoPreview(node: HTMLImageElement) {
-        const file = files![0];
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-            const res = e.target?.result as string | undefined;
-            if (res) {
-                node.src = res;
+        if (!$shopCreationStore.logo) {
+            const file = files![0];
+            const reader = new FileReader();
+    
+            reader.onload = (e) => {
+                const res = e.target?.result as string | undefined;
+                if (res) {
+                    node.src = res;
+                }
             }
+    
+            reader.readAsDataURL(file);
+        } else {
+            loadLogoPreviewImageFromStore()
         }
-
-        reader.readAsDataURL(file);
     }
 
     function goToNextStep() {
@@ -224,7 +252,7 @@
                 </div>
                 <input class="input" type="text" placeholder="Add Shop Title" minlength="5" maxlength="30" bind:value={$shopCreationStore.name}>
                 <div class="w-full">
-                    {#if !files || files.length == 0}
+                    {#if (!files || files.length == 0) && !$shopCreationStore.logo}
                         <button class="btn variant-ringed-primary w-full" on:click={selectLogo}>
                             <p class="text-primary-400">Select Shop Logo</p>
                             <Image size={24} fill="rgb(56, 139, 255)"/>
@@ -237,7 +265,7 @@
                                     <p class="text-slate-100">Click to unselect image</p>
                                 </div>
                             {/if}
-                            <img class="h-full w-full bg-cover rounded" src="" alt="" use:loadLogoPreview>
+                            <img id="preview-logo" class="h-full w-full bg-cover rounded" src="" alt="" use:loadLogoPreview>
                         </button>
                     {/if}
                 </div>
