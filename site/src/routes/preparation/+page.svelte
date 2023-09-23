@@ -15,6 +15,10 @@
 
     let stripeConnectSate: { notAllow: boolean, m: string } | undefined;
     let loading: { s: true, message: string } | undefined;
+    $: if (loading && !navigator.onLine) {
+        loading = undefined;
+        offlineSatePopup();
+    }
     /** Handle redirection from stripe */
     async function redirectFromStripeHandle() {
         const u = new URL(document.URL);
@@ -39,6 +43,10 @@
             // Same function for both action is more simple
             await connectWithStripe();
         }
+    }
+    function offlineSatePopup() {
+        loading = undefined;
+        alert("We couldn't check informations using network connections because you switch to offline state. Please connect to network and reply action again!")
     }
     // onMount(redirectFromStripeHandle);
     
@@ -67,6 +75,7 @@
         window.addEventListener("pageshow", shopCreationStore.load);
         window.addEventListener("reset", shopCreationStore.save);
         window.addEventListener("pagehide", shopCreationStore.save);
+        window.addEventListener("offline", offlineSatePopup) // When loading sometimes occurs but connection changed to offline state
         shopCreationStore.load();
     });
 
@@ -218,6 +227,36 @@
         else alert("Cannot perform 'connect account action' via Stripe")
     }
 
+    /** Check whether user is already connected to Stripe when user went to 3 stage (JavaScript index 2) */
+    function checkUserIsntConnectedWithStripe(node: HTMLDivElement) {
+        (async function() {
+            try {
+                loading = { s: true, message: "Checking whether you enclose Stripe Connect to your account" };
+                const f = await fetch("http://localhost:8100/payments/connect-shop", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        'content-type': "application/json"
+                    },
+                    body: JSON.stringify({ verify: true })
+                });
+        
+                loading = undefined;
+                if (f.status != 200) {
+                    stripeConnectSate = { notAllow: true, m: "Stripe and we couldn't collect all required informations to perform payouts for you" };
+                }
+                else stripeConnectSate = { notAllow: false, m: "" };
+            }
+            catch(err) {
+                loading = undefined;
+
+                if ((err as any).message.toLocaleLowerCase() == "failed to fetch") {
+                    offlineSatePopup()
+                }
+            }
+        })()
+    }
+
     function completeShopCreation() {
         // TODO: Save shop datas, Redirect to final page
     }
@@ -322,7 +361,7 @@
             <svelte:fragment slot="header">
                 <h2 class="badge variant-soft-secondary font-normal w-fit">{stepName}</h2>
             </svelte:fragment>
-            <div class="card variant-soft p-2 flex flex-col gap-y-5">
+            <div class="card variant-soft p-2 flex flex-col gap-y-5" use:checkUserIsntConnectedWithStripe>
                 <div class="head">
                     <h3 class="h3 font-bold">Connect with 
                         <span class="text-success-200">Stripe</span> 
