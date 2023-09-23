@@ -1,15 +1,16 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { Image } from "carbon-icons-svelte";
     import { goto } from "$app/navigation";
     import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
     import { Stepper, Step } from '@skeletonlabs/skeleton';
     import stripeLogo from "$lib/stripe-logo.svg";
     import { Spinner } from "flowbite-svelte";
+    import { shopCreationStore } from "$lib/inter_stores";
     
     type FashionLayouts = "remarkable-blackwhite";
-    
-    let stepNumber = 2;
+
+    let stepNumber = 0;
     $: stepName = stepNumber == 0 ? "Prepare Foundaments" : (stepNumber == 1 ? "Prepare Layout" : (stepNumber == 2 ? "Billing preparation" : "Preparation Finalization"));
 
     let stripeConnectSate: { notAllow: boolean, m: string } | undefined;
@@ -45,32 +46,46 @@
     }
     
     let shopTypeIsInSelecting = false;
-    let shopType: undefined | string;
-    let shopTitle: string | undefined;
     let showUnselectCapability = false;
     let files: FileList | undefined;
-    let pickupLayout: FashionLayouts | undefined = undefined;
 
     // Lock state whether is activated
     let locked: boolean = true;
     $: {
-        shopTypeIsInSelecting;
-        shopType;
-        shopTitle;
-        showUnselectCapability;
-        files;
-        pickupLayout;
+        $shopCreationStore;
         stripeConnectSate;
         locked = !allowGoAhead();
+    }
+
+    // All things connected with shop state storage
+    onMount(() => {
+        window.addEventListener("pageshow", shopCreationStore.load);
+        shopCreationStore.load()
+    });
+
+    onDestroy(() => {
+        window.addEventListener("pagehide", shopCreationStore.save);
+        shopCreationStore.save();
+    });
+
+        // Create array buffer from image logo
+    $: if (files && files.length) {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            $shopCreationStore.logo = { cnt: new Uint8Array(reader.result as ArrayBuffer), mime: files![0].type, name: files![0].name };
+        }
+
+        reader.readAsArrayBuffer(files[0]);
     }
 
     // Functions
     function allowGoAhead() {
         if (stepNumber == 0) {
-            const stL = (shopTitle?.trim() || "").length || 0;
-            return (shopType?.length || 0) != 0 && (stL >= 5 && stL <= 30) && (files || []).length != 0;
+            const stL = ($shopCreationStore.name?.trim() || "").length || 0;
+            return ($shopCreationStore.shop_type?.length || 0) != 0 && (stL >= 5 && stL <= 30) && (files || []).length != 0;
         } else if (stepNumber == 1) {
-            return typeof pickupLayout != "undefined";
+            return typeof $shopCreationStore.layout != "undefined";
         } else if (stepNumber == 2) {
             return (stripeConnectSate && !stripeConnectSate.notAllow) ? true : false;
         }
@@ -118,7 +133,7 @@
             const tg = ev.currentTarget! as HTMLButtonElement;
             const cls = tg.classList;
             
-            if (pickupLayout != choosen) { // When user don't select this layout prior
+            if ($shopCreationStore.shop_type != choosen) { // When user don't select this layout prior
                 // Unselect other layouts types
                 const layoutBtns = document.getElementsByClassName("layout-btn");
                 for (const btn of layoutBtns) {
@@ -128,11 +143,11 @@
                 }
             
                 // Assign selected layout
-                pickupLayout = choosen;
+                $shopCreationStore.layout = choosen;
                 cls.replace("variant-ringed", "variant-soft-primary");
             }
             else { // When user select this layout prior
-                pickupLayout = void pickLayout;
+                $shopCreationStore.layout = undefined;
                 cls.replace("variant-soft-primary", "variant-ringed");
             };
         };
@@ -186,7 +201,7 @@
     </aside>
 {/if}
 <div class="bckg p-5">
-    <Stepper start={2} on:next={goToNextStep} on:back={goToPreviousStep} on:complete={completeShopCreation}>
+    <Stepper on:next={goToNextStep} on:back={goToPreviousStep} on:complete={completeShopCreation}>
         <Step {locked}>
             <svelte:fragment slot="header">
                 <h2 class="badge variant-soft-secondary font-normal w-fit gap-y-5">{stepName}</h2>
@@ -194,20 +209,20 @@
             <div class="form-asif card p-2 flex flex-col gap-y-5">
                 <h3 class="h3 font-bold">Common Shop Presetups</h3>
                 <div class="slel">
-                    {#if !shopTypeIsInSelecting && !shopType}
+                    {#if !shopTypeIsInSelecting && !$shopCreationStore.shop_type}
                         <button class="btn text-color-blue variant-ringed-primary text-primary-400 w-full text-start" on:click={_ => {
                             shopTypeIsInSelecting = true;
                         }}>
                             Add Shop Type
                         </button>
                     {:else}
-                        <select class="select" name="sl-type" on:blur={_ => shopTypeIsInSelecting = false} bind:value={shopType}>
+                        <select class="select" name="sl-type" on:blur={_ => shopTypeIsInSelecting = false} bind:value={$shopCreationStore.shop_type}>
                             <option value="fashion">Fashion Store</option>
                             <option value="supplements">Supplements Store</option>
                         </select>
                     {/if}
                 </div>
-                <input class="input" type="text" placeholder="Add Shop Title" minlength="5" maxlength="30" bind:value={shopTitle}>
+                <input class="input" type="text" placeholder="Add Shop Title" minlength="5" maxlength="30" bind:value={$shopCreationStore.name}>
                 <div class="w-full">
                     {#if !files || files.length == 0}
                         <button class="btn variant-ringed-primary w-full" on:click={selectLogo}>
