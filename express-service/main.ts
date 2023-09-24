@@ -190,6 +190,20 @@ app.post("/create-shop", async (req, res) => {
     else res.sendStatus(400);
 });
 
+// Check shop exists
+app.post("/shop-exists-check", async (req, res) => {
+    const { shop_id } = req.body;
+
+    const check = await db.cDb.execute("SELECT shop_id FROM shops WHERE shop_id = ? ALLOW FILTERING;", [shop_id], {
+        prepare: true
+    });
+
+    if (check.rows.length) {
+        res.sendStatus(200);
+    }
+    else res.sendStatus(404);
+});
+
 app.listen(8100, () => {
     console.log("App listen on port: ", port)
 });
