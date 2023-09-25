@@ -1,8 +1,6 @@
-import { error } from '@sveltejs/kit';
+import { error } from "@sveltejs/kit";
 
-export const load = async ({ params }) => {
-    const { shop_id } = params;
-
+export async function checkShopExists({ shop_id }: any) {
     const f = await fetch("http://localhost:8100/shop-exists-check", {
         method: "POST",
         credentials: "include",
@@ -10,7 +8,5 @@ export const load = async ({ params }) => {
         body: JSON.stringify({ shop_id })
     });
 
-    if (f.status == 404) throw error(404);
-
-    return {}
+    if (f.status != 200) throw error(404, { message: "Page hasn't been not found!" });
 }
