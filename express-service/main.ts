@@ -216,6 +216,36 @@ app.post("/get-shop-items", async (req, res) => {
     else res.sendStatus(404);
 });
 
+app.post("/shop-items/:operation", async (req, res) => {
+    const { operation } = req.params;
+    
+    switch (operation) {
+        case "create-item":
+            {
+                const { name, sizes, amount, price, shop_id }: { name: string, sizes: string[], amount: { [index: string]: number }, price: { [index: string]: number }, shop_id: string } = req.body;
+                const { uuid } = res.locals.appSes;
+                const verifiedPayload = (() => {
+                    return (name && sizes && amount && price && shop_id) && name?.length > 0 && sizes.length > 0 && Object.keys(amount).length == sizes.length && Object.keys(price).length == sizes.length;
+                })();
+                const verifiedShopOwner = await (async () => {
+                    const q = await db.cDb.execute("select * from shops where owner_id = ?;", [uuid], { prepare: true }); // Get shops
+                    return q.rows.some(v => {
+                        return v.owner_id == uuid && v.shop_id == shop_id;
+                    })
+                })();
+
+                // Src action -> Only when: payload is correct and action purchaser is owner of shop
+                if (verifiedPayload && verifiedShopOwner) {
+                    const ex = await db.cDb.execute("INSERT INTO items (shop_id, item_id, name, amount, prices_eur, sizes) values (?, ?, ?, ?, ?, ?);", [shop_id, randomUUID(), name, amount, price, sizes], { prepare: true });
+
+                    res.sendStatus(200);
+                }
+                else res.sendStatus(404);
+            }
+        break;
+    }
+});
+
 app.listen(8100, () => {
     console.log("App listen on port: ", port)
 });
