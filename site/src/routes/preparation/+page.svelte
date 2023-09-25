@@ -276,8 +276,10 @@
             });
 
             if (call.status == 200) {
+                const { shop_id } = await call.json();
+
                 // Redirect user to finish page
-                await goto("/preparation/final");
+                await goto(`/preparation/final?s=${shop_id}`);
             }
             else {
                 alert("Cannot create your shop from some reason!")
