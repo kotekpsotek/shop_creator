@@ -243,6 +243,18 @@ app.post("/shop-items/:operation", async (req, res) => {
                 else res.sendStatus(404);
             }
         break;
+
+        case "get-all":
+            {
+                const { shop_id } = req.body;
+                const qr = (await db.cDb.execute("select item_id, name, amount, prices_eur, sizes from items where shop_id = ?;", [shop_id], { prepare: true })).rows;
+
+                if (qr.length) {
+                    res.json({ results: qr });
+                }
+                else res.sendStatus(404);
+            }
+        break;
     }
 });
 
