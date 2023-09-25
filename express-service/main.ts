@@ -12,7 +12,6 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import RedisStore from "connect-redis";
 import payments from "./payments"
-import { should } from "vitest";
 
 declare module "express-session" {
     interface SessionData {
@@ -139,9 +138,6 @@ app.use(async (req, res, xt) => {
             else res.sendStatus(401)
         });
     }
-    else if (req.session.logged) {
-        xt();
-    }
     else if (!cookie) res.sendStatus(401);
 })
 
@@ -178,12 +174,12 @@ app.post("/create-shop", async (req, res) => {
             const shopId = randomUUID();
             
             // Save into database
-            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [should, res.locals.appSes.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
+            await db.cDb.execute("INSERT INTO shops (shop_id, owner_id, name, creation_time, income_eur, layout_selected, logo_path, shop_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", [shopId, res.locals.appSes.uuid, name, Date.now(), 0, layout, "", shop_type], { prepare: true });
 
             // Save image -> Yes size and mime of type is checking before save TODO: check file container also to prevent SSRF
             fs.writeFileSync(`./temp/shop-logo-${shopId}.${ext[logo.mime]}`, Buffer.from(Object.values(logo.cnt)));
 
-            res.status(200).end();
+            res.status(200).json({ shop_id: shopId });
         }
         else res.sendStatus(400);
     }
@@ -200,6 +196,22 @@ app.post("/shop-exists-check", async (req, res) => {
 
     if (check.rows.length) {
         res.sendStatus(200);
+    }
+    else res.sendStatus(404);
+});
+
+// Get all shop items
+app.post("/get-shop-items", async (req, res) => {
+    const { shop_id } = req.body;
+
+    if (shop_id) {
+        const items = (await db.cDb.execute("SELECT * FROM items WHERE shop_id = ?", [shop_id], { prepare: true })).rows;
+        console.log(items)
+    
+        if (items.length) {
+            res.status(200).json({ items });
+        }
+        else res.sendStatus(404);
     }
     else res.sendStatus(404);
 });
