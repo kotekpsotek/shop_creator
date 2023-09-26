@@ -1,24 +1,18 @@
-import ampq from "amqplib";
+import { connect } from "amqplib";
 
-class PacketMq {
-    connection: Promise<ampq.Connection>;
-    channel: Promise<ampq.Channel>;
-    
-    constructor() {
-        this.connection = (async () => {
-            return await ampq.connect("amqp://localhost");
-        })();
-        this.channel = (async () => {
-            return await (await this.connection).createChannel()
-        })();
+const cdn = (async () => {
+    const connection = await connect("amqp://localhost:5762");
+    const channel = await connection.createChannel();
+
+    return {
+        connection,
+        channel
     }
+})();
 
-    async createExchangeWithPublish(exchange_name: string, qname: string, message: string) {
-        // const queue = await (await this.channel).assertQueue(qname);
-        await (await this.channel).assertExchange(exchange_name, "topic");
-        (await this.channel).bindQueue(qname, exchange_name, '');
-        (await this.channel).publish(exchange_name, '', Buffer.from(message));
+// Create queues
+(async () => {
+    (await cdn).channel.assertQueue("created-shop-item");
+})()
 
-    }
-}
-
+export default cdn;

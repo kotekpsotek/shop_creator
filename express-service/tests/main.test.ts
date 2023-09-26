@@ -1,6 +1,5 @@
 import amqp from "amqplib";
 import { describe, test, beforeAll } from "vitest";
-import { PacketMq } from "../queue-streaming"
 
 async function createConnection() {
     const connection = await amqp.connect("amqp://localhost:5762");

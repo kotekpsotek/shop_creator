@@ -11,7 +11,8 @@ import * as db from "./db"
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import RedisStore from "connect-redis";
-import payments from "./payments"
+import payments from "./payments";
+import rabbitmq from "./queue-streaming";
 
 declare module "express-session" {
     interface SessionData {
@@ -216,6 +217,7 @@ app.post("/get-shop-items", async (req, res) => {
     else res.sendStatus(404);
 });
 
+// Handle operations on shop items
 app.post("/shop-items/:operation", async (req, res) => {
     const { operation } = req.params;
     
@@ -236,8 +238,13 @@ app.post("/shop-items/:operation", async (req, res) => {
 
                 // Src action -> Only when: payload is correct and action purchaser is owner of shop
                 if (verifiedPayload && verifiedShopOwner) {
-                    const ex = await db.cDb.execute("INSERT INTO items (shop_id, item_id, name, amount, prices_eur, sizes) values (?, ?, ?, ?, ?, ?);", [shop_id, randomUUID(), name, amount, price, sizes], { prepare: true });
+                    const itemId = randomUUID();
+                    const ex = await db.cDb.execute("INSERT INTO items (shop_id, item_id, name, amount, prices_eur, sizes) values (?, ?, ?, ?, ?, ?);", [shop_id, itemId, name, amount, price, sizes], { prepare: true });
 
+                    // Send event to RabbitMQ Queue 🐇
+                    (await rabbitmq).channel.sendToQueue("created-shop-item", Buffer.from(JSON.stringify({itemId, shop_id})))
+
+                    // Send to rest client status back
                     res.sendStatus(200);
                 }
                 else res.sendStatus(404);
