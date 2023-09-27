@@ -20,6 +20,7 @@
         if (sizeAmount % 1 === 0) {
             sizesAmount[actualSelectdSizeAmount] = sizeAmount;
             actualSelectdSizeAmount = "";
+            sizeAmount = 1;
             alert("New size amount enrolled");
         }
         else {
@@ -30,6 +31,7 @@
     let price: number = 10;
     function acceptSizePrice() {
         prices[actualSelectdSizePrice] = price;
+        actualSelectdSizePrice = ""
     }
 
     function getSizesWhoseArentOnSizesAmount() {
@@ -80,7 +82,7 @@
 
     let bodyTableSizesPrices = [];
     let tablePricesSimple: TableSource = {
-        head: ["Size", "Price"],
+        head: ["Size", "Price (EUR)"],
         body: bodyTableSizes
     };
 
@@ -194,8 +196,24 @@
     }
 
     /** Emit complete event */
-    function addItem() {
-        dsp("complete", { name, sizes: sizesList, amount: sizesAmount, price: prices });
+    async function addItem() {        
+        const mappedImages: Promise<Record<string, any>>[] = files.map(async v => {
+            const s1 = new Uint8Array(await v.arrayBuffer());
+            const s2 = Object.values(JSON.parse(JSON.stringify({ b: s1 })).b);
+            return { mime: v.type, bytes: s2 }
+        });
+
+        let rI: Record<string, any>[] = [];
+        for (const p of mappedImages) {
+            rI = [...rI, await p]
+        }
+
+        if (name.length && sizesList.length && Object.entries(sizesAmount).length && Object.entries(prices).length && rI.length) {
+            dsp("complete", { name, sizes: sizesList, amount: sizesAmount, price: prices, item_images: rI });
+        }
+        else {
+            alert("Fullfill all required fields")
+        }
     }
 
     /** Close GUI menu */
