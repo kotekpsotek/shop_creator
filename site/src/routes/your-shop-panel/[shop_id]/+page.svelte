@@ -34,6 +34,7 @@
         });
     }
 
+    let refresh = 1;
     async function addNewItemMenu(ev: Event) {
         const m = new AddNewItemMenu({
             target: document.body
@@ -45,26 +46,25 @@
         });
 
         // To create new item throught server
-        m.$on("complete", ({ detail }: CustomEvent<{ [id: string]: unknown }>) => {
-            console.log(detail)
+        m.$on("complete", async ({ detail }: CustomEvent<{ [id: string]: unknown }>) => {
+            const f = await fetch("http://localhost:8100/shop-items/create-item", {
+                method: "POST",
+                headers: {
+                    'content-type': "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({...detail, shop_id: $page.params.shop_id })
+            });
+
+            if (f.status == 200) {
+                alert("Item is from now in your shop");
+                m.$destroy();  
+                refresh++;       
+            }
+            else alert("Cannot add item to your shop");
         });
     }
 
-    let refresh = 1;
-    async function addNewItemAction(obj: { name: string, sizes: string[], amount: { [id: string]: number }, price: { [id: string]: number }, shop_id: string }) {
-        const f = await fetch("http://localhost:8100/shop-items/create-item", {
-            method: "post",
-            headers: { 'content-type': "application/json" },
-            body: JSON.stringify({
-                ...obj
-            })
-        });
-
-        if (f.status == 200) {
-            refresh++;
-        }
-        else alert("cannot add new item!");
-    }
 </script>
 
 {#key refresh}
