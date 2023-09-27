@@ -1,8 +1,9 @@
 <script lang="ts">
-    import { Close, CurrencyEuro, WatsonHealthHangingProtocol } from "carbon-icons-svelte";
-    import { InputChip, Table, tableMapperValues } from "@skeletonlabs/skeleton";
+    import { Close, CurrencyEuro, WatsonHealthHangingProtocol, CloudUpload } from "carbon-icons-svelte";
+    import { FileDropzone, InputChip, Table, tableMapperValues } from "@skeletonlabs/skeleton";
     import type { TableSource } from '@skeletonlabs/skeleton';
     import { createEventDispatcher } from "svelte";
+    import type { EventHandler } from "svelte/elements";
 
     const dsp = createEventDispatcher();
     
@@ -11,7 +12,8 @@
     let actualSelectdSizeAmount: string = "";
     let actualSelectdSizePrice: string = "";
     let sizesAmount: { [index: string]: number } = {};
-    let prices: { [index: string]: number } = {}
+    let prices: { [index: string]: number } = {};
+    let files: File[] = [];
 
     let sizeAmount: number = 1;
     function acceptSizeAmount() {
@@ -159,6 +161,38 @@
         sizesAmount = sizesAmount;
     }
 
+    /** Add image to file list */
+    function changeDropZone(ev: any) {
+        const { currentTarget }: InputEvent = ev;
+        const gt = currentTarget as HTMLInputElement;
+        
+        if (gt.files?.length) {
+            files = [...files, ...gt.files];
+        }
+    }
+
+    /** Mouse On image interaction */
+    let onImageInteraction: number | undefined;
+    function onImage(iid: number) {
+        return ((ev) => {
+            onImageInteraction = iid;
+        }) satisfies EventHandler;
+    }
+
+    function offImage(iid: number) {
+        return ((ev) => {
+            onImageInteraction = void onImageInteraction;
+        }) satisfies EventHandler
+    };
+
+    /** Remove image which was selected by user */
+    function removeSelectedImage(iid: number) {
+        return (ev => {
+            files.splice(iid, 1);
+            files = files;
+        }) satisfies EventHandler;
+    }
+
     /** Emit complete event */
     function addItem() {
         dsp("complete", { name, sizes: sizesList, amount: sizesAmount, price: prices });
@@ -269,6 +303,39 @@
                     </div>
                 {/if}
             {/key}
+        </div>
+        <div class="card variant-ringed p-2 flex flex-col gap-y-2">
+            <h3 class="h3 font-semibold capitalize">4th: Images</h3>
+            <FileDropzone name="files" accept="image/png, image/jpeg, image/webp" on:change={changeDropZone}>
+                <svelte:fragment slot="lead">
+                    <div class="w-full flex justify-center">
+                        <CloudUpload size={32}/>
+                    </div>
+                </svelte:fragment>
+                <svelte:fragment slot="message">
+                    <span class="font-bold">Upload a file</span> 
+                    or 
+                    <span class="font-bold">drag and drop</span>
+                </svelte:fragment>
+                <svelte:fragment slot="meta">PNG, JPEG and WEBP images are allowed</svelte:fragment>
+            </FileDropzone>
+            {#if files.length}
+                <div id="images-list">
+                    <h4 class="h4 font-semibold mb-2">Images list</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        {#each files as image, i}
+                            <button class="w-fit h-fit relative" on:mouseenter={onImage(i)} on:mouseleave={offImage(i)} on:click={removeSelectedImage(i)}>
+                                {#if onImageInteraction == i}
+                                    <div class="absolute w-full h-full flex justify-center items-center bg-black bg-opacity-70">
+                                        <p class="text-red-600 font-bold font-sans  ">Click to delete image</p>
+                                    </div>
+                                {/if}
+                                <img src="{URL.createObjectURL(image)}" alt="">
+                            </button>
+                        {/each}
+                    </div>
+                </div>
+            {/if}
         </div>
         <button class="accept btn capitalize variant-filled-primary" on:click={addItem}>Add item</button>
     </div>
