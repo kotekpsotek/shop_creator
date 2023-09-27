@@ -36,7 +36,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json({ limit: "3.5mb" }));
+app.use(express.json({ limit: "35mb" }));
 app.use(session({
     name: "sess",
     store: storeRedis as any,
@@ -120,6 +120,20 @@ app.post("/login", async (req, res) => {
     }
     else res.redirect("http://localhost:5173/account/login?status=401");
 });
+
+// Get all valulabe stuff for frontend application side
+app.get("/shop-frontend-info/:shop_id", async ({ params: { shop_id }, ...req }, res) => {
+    try {
+        if (shop_id) {
+            const { rows } = await db.cDb.execute("select shop_type, layout_selected from shops where shop_id = ? ALLOW FILTERING", [shop_id], { prepare: true });
+            res.json({ ...rows[0] });
+        }
+        else res.sendStatus(404);
+    }
+    catch(_) {
+        res.sendStatus(404);
+    }
+})
 
 // Handle actions only for logged in users 
 // For call all actions below: User must be firstly logged in
@@ -224,7 +238,7 @@ app.post("/shop-items/:operation", async (req, res) => {
     switch (operation) {
         case "create-item":
             {
-                const { name, sizes, amount, price, shop_id }: { name: string, sizes: string[], amount: { [index: string]: number }, price: { [index: string]: number }, shop_id: string } = req.body;
+                const { name, sizes, amount, price, shop_id, item_images }: { name: string, sizes: string[], amount: { [index: string]: number }, price: { [index: string]: number }, shop_id: string, item_images: { mime: string, bytes: number[] }[] } = req.body;
                 const { uuid } = res.locals.appSes;
                 const verifiedPayload = (() => {
                     return (name && sizes && amount && price && shop_id) && name?.length > 0 && sizes.length > 0 && Object.keys(amount).length == sizes.length && Object.keys(price).length == sizes.length;
@@ -235,14 +249,21 @@ app.post("/shop-items/:operation", async (req, res) => {
                         return v.owner_id == uuid && v.shop_id == shop_id;
                     })
                 })();
+                const verifiedItemImages = (() => {
+                    const correctTypesMime = ["image/png", "image/webp", "image/jpeg"];
+                    return correctTypesMime.length > 0 && item_images.every(a => correctTypesMime.includes(a.mime));
+                })();
 
                 // Src action -> Only when: payload is correct and action purchaser is owner of shop
-                if (verifiedPayload && verifiedShopOwner) {
+                if (verifiedPayload && verifiedShopOwner && verifiedItemImages) {
                     const itemId = randomUUID();
                     const ex = await db.cDb.execute("INSERT INTO items (shop_id, item_id, name, amount, prices_eur, sizes) values (?, ?, ?, ?, ?, ?);", [shop_id, itemId, name, amount, price, sizes], { prepare: true });
 
                     // Send event to RabbitMQ Queue 🐇
                     (await rabbitmq).channel.sendToQueue("created-shop-item", Buffer.from(JSON.stringify({itemId, shop_id})))
+
+                    // TODO: Save images
+
 
                     // Send to rest client status back
                     res.sendStatus(200);

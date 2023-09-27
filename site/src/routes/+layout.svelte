@@ -21,7 +21,7 @@
 </script>
 
 {#key $navigating}
-    {#if !new URL(document.URL).pathname.includes("layouts_preview")}
+    {#if !new URL(document.URL).pathname.includes("layouts_preview") && !new URL(document.URL).pathname.includes("shops/")}
         <div class="w-full sticky top-0 right-0 z-10">
             <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
                 <svelte:fragment slot="lead">(icon)</svelte:fragment>
