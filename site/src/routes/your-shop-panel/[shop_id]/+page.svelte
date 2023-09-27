@@ -22,15 +22,40 @@
         appState = "manage shop"
     }
 
-    async function getShopItems(): Promise<TableSource> {
-        return new Promise((res, rej) => {
-           /*  setTimeout(() => {
-                res([{}] as any)
-            }, 3_000) */
-            /* rej() */
-            /* res({
-                head: ["name", "id", "sizes", "amount", "price"]
-            } satisfies TableSource) */
+    /** Load user shop items from fregin server */
+    function getShopItems(): Promise<TableSource> {
+        return new Promise(async (res, rej) => {
+            const g = await fetch("http://localhost:8100/shop-items/get-all", {
+                method: "POST",
+                headers: {
+                    'content-type': "Application/Json"
+                },
+                credentials: "include",
+                body: JSON.stringify({ shop_id: $page.params.shop_id })
+            });
+
+            if (g.status == 200) {
+                // Get values
+                const { results }: { results: { item_id: string, name: string, amount: { [size: string]: number }, prices_eur: { [size: string]: number }, sizes: string[] }[] } = await g.json();
+
+                // Format some fields
+                const formated = [];
+                results.forEach(v => {
+                    (v.amount as any) = JSON.stringify(v.amount);
+                    (v.prices_eur as any) = JSON.stringify(v.prices_eur);
+                    formated.push(v);
+                })
+
+                // Prepare table layout
+                const src: TableSource = {
+                    head: ["id", "name", "sizes", "amount", "prices (eur)"],
+                    body: tableMapperValues(results, ["item_id", "name", "sizes", "amount", "prices_eur"])
+                }
+
+                // Return results
+                res(src);
+            }
+            else rej("Cannot obtain items")
         });
     }
 
@@ -103,7 +128,7 @@
             <!--  -->
             <div class="p-5 select-none w-full h-4/5 pb-5">
                 <p class="badge variant-soft-tertiary w-fit mb-2">Manage items</p>
-                <div class="card variant-soft-secondary p-2 w-full h-full">
+                <div class="card variant-soft-secondary p-2 w-full h-full flex flex-col gap-y-2">
                     <div class="flex justify-between items-end">
                         <h3 class="h3 font-semibold mb-2 text-secondary-400">Manage shop items</h3>
                         <button class="btn variant-ghost-secondary" on:click={addNewItemMenu}>Add new</button>
@@ -114,11 +139,11 @@
                         </div>
                     {:then items}
                         <div class="w-full h-full overflow-auto">
-                            <!-- <Table source={items}/> -->
+                            <Table source={items} interactive={true}/>
                         </div>
-                    {:catch}
+                    {:catch e}
                         <div class="w-full h-full flex justify-center items-center">
-                            <p class="font-bold text-lg text-error-50">❌Your items list is empty❌</p>
+                            <p class="font-bold text-lg text-error-50">❌{!e.message ? "Your items list is empty" : e.message}❌</p>
                         </div>
                     {/await}
                 </div>
