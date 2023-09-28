@@ -4,10 +4,58 @@
     import prv1 from "$lib/images/layouts/remarkable-black-white/products-ex/mini-blue/p1.jpg"
     import prv2 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semiblue/p1.jpg"
     import prv3 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semi-mid-blue/p1.jpg"
+    import { onMount } from "svelte";
+    import { page } from "$app/stores";
+    import Error from "../../routes/+error.svelte";
     
     export let previewMode: boolean = false;
+    const maximumItemsPerPage = 25; // How much items can occur on one page
     
     let upBarIconHeight = 30 as 32;
+    let pageNumber = 1; // Actual page number
+
+    async function loadItems() {
+        const f = await fetch("http://localhost:8100/shop-items/get-all", {
+            method: "POST",
+            headers: { 'content-type': 'application/json' },
+            credentials: "include",
+            body: JSON.stringify({ shop_id: $page.params.shop_id, items_images: true })
+        });
+
+        if (f.status == 200) {
+            const { imgs, results }: { imgs: { item_id: string, b: { type: "Buffer", data: number[] } }[], results: any[] } = await f.json();
+            return {results, imgs};
+        }
+        else {
+            alert("Failure occur")
+            throw "No content anything isn't avaiable to display";
+        }
+    }
+
+    /** Add content to image element */
+    function preperObjectUrl(node: HTMLImageElement, b?: { data: number[] }) {
+        if (b) {
+            const uu = new Uint8Array(b.data);
+            const blb = new Blob([uu]);
+            node.src = URL.createObjectURL(blb);
+        }
+    }
+
+    /** Get the smallest and the greates price to compose .prc-range html element content */
+    function prcRangeCompose(node: HTMLDivElement, prices: { [price: string]: number }) {
+        // Prices elements
+        const prcS = node.querySelectorAll(".prc");
+        const prc1 = prcS[0];
+        const prc2 = prcS[1];
+
+        // Get the smallest and the greates price
+        const prMin = Math.min(...Object.values(prices));
+        const prMax = Math.max(...Object.values(prices));
+
+        // Assign prices to correct fields
+        prc1.textContent = String(prMin);
+        prc2.textContent = String(prMax);
+    }
 </script>
 
 <div class="app" class:preview-mode={previewMode}>
@@ -40,37 +88,68 @@
             </p>
         </div>
         <div class="offer">
-            <button class="card-offer">
-                <img src="{prv1}" alt="">
-                <p id="desc">Decs</p>
-                <p class="price">
-                    <span class="sgn">&#36</span>
-                    <span class="prc">55</span>
-                </p>
-            </button>
-            <button class="card-offer">
-                <img src="{prv2}" alt="">
-                <p id="desc">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <div class="prc-range">
-                    <p class="price">
-                        <span class="sgn">&#36</span>
-                        <span class="prc">45</span>
-                    </p>
-                    <p class="sep">-</p>
+            {#if previewMode}
+                <button class="card-offer">
+                    <img src="{prv1}" alt="">
+                    <p id="desc">Decs</p>
                     <p class="price">
                         <span class="sgn">&#36</span>
                         <span class="prc">55</span>
                     </p>
-                </div>
-            </button>
-            <button class="card-offer">
-                <img src="{prv3}" alt="">
-                <p id="desc">Decs</p>
-                <p class="price">
-                    <span class="sgn">&#36</span>
-                    <span class="prc">55</span>
-                </p>
-            </button>
+                </button>
+                <button class="card-offer">
+                    <img src="{prv2}" alt="">
+                    <p id="desc">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <div class="prc-range">
+                        <p class="price">
+                            <span class="sgn">&#36</span>
+                            <span class="prc">45</span>
+                        </p>
+                        <p class="sep">-</p>
+                        <p class="price">
+                            <span class="sgn">&#36</span>
+                            <span class="prc">55</span>
+                        </p>
+                    </div>
+                </button>
+                <button class="card-offer">
+                    <img src="{prv3}" alt="">
+                    <p id="desc">Decs</p>
+                    <p class="price">
+                        <span class="sgn">&#36</span>
+                        <span class="prc">55</span>
+                    </p>
+                </button>
+            {:else}
+                {#await loadItems()}
+                    <p>Loading items...</p>
+                {:then {imgs, results}}
+                    {#each results as { item_id, name, amount, prices_eur, sizes }}
+                        <button class="card-offer" data-itid={item_id}>
+                            <img src="" alt="Lack of img" use:preperObjectUrl={imgs.find(v => v.item_id == item_id)?.b}>
+                            <p id="desc">Decs</p>
+                            {#if Object.entries(prices_eur).length == 1}
+                                <p class="price">
+                                    <span class="sgn">&#36</span>
+                                    <span class="prc">{Object.values(prices_eur)[0]}</span>
+                                </p>
+                            {:else}
+                                <div class="prc-range" use:prcRangeCompose={prices_eur}>
+                                    <p class="price">
+                                        <span class="sgn">&#36</span>
+                                        <span class="prc">-</span>
+                                    </p>
+                                    <p class="sep">-</p>
+                                    <p class="price">
+                                        <span class="sgn">&#36</span>
+                                        <span class="prc">-</span>
+                                    </p>
+                                </div>
+                            {/if}
+                        </button>
+                    {/each}
+                {/await}
+            {/if}
         </div>
     </div>
 </div>
@@ -93,7 +172,8 @@
     }
 
     .app.preview-mode {
-        overflow-y: hidden;
+        height: 100%;
+        overflow-y: auto;
     }
 
     .upbar {
