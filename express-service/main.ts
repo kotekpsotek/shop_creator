@@ -6,6 +6,7 @@ dotenv.config({
 import express from "express";
 import cors from "cors";
 import fs from "fs";
+import path from "path";
 import { createHash, randomUUID } from "crypto";
 import * as db from "./db"
 import session from "express-session";
@@ -253,6 +254,18 @@ app.post("/shop-items/:operation", async (req, res) => {
                     const correctTypesMime = ["image/png", "image/webp", "image/jpeg"];
                     return correctTypesMime.length > 0 && item_images.every(a => correctTypesMime.includes(a.mime));
                 })();
+                const getMimeExt = (mime: string) => {
+                    const correctTypesMime = ["image/png", "image/webp", "image/jpeg"];
+
+                    switch(mime) {
+                        case "image/png":
+                            return ".png"
+                        case "image/webp":
+                            return ".webp";
+                        case "image/jpeg":
+                            return ".jpg"
+                    }
+                }
 
                 // Src action -> Only when: payload is correct and action purchaser is owner of shop
                 if (verifiedPayload && verifiedShopOwner && verifiedItemImages) {
@@ -262,8 +275,13 @@ app.post("/shop-items/:operation", async (req, res) => {
                     // Send event to RabbitMQ Queue 🐇
                     (await rabbitmq).channel.sendToQueue("created-shop-item", Buffer.from(JSON.stringify({itemId, shop_id})))
 
-                    // TODO: Save images
+                    // Save images
+                    const p = `./temp/items/shop-${shop_id}`;
+                    if (!fs.existsSync(p)) fs.mkdirSync(`./temp/items/shop-${shop_id}`);
 
+                    item_images.forEach((v, i) => {
+                        fs.writeFileSync(path.join(p, itemId + `-${i + 1}` + getMimeExt(v.mime)), Buffer.from(v.bytes), { encoding: "utf-8" });
+                    });
 
                     // Send to rest client status back
                     res.sendStatus(200);
