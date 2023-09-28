@@ -21,7 +21,6 @@
             sizesAmount[actualSelectdSizeAmount] = sizeAmount;
             actualSelectdSizeAmount = "";
             sizeAmount = 1;
-            alert("New size amount enrolled");
         }
         else {
             alert("Amount of size must be intiger. You gave float number");
@@ -208,7 +207,7 @@
             rI = [...rI, await p]
         }
 
-        if (name.length && sizesList.length && Object.entries(sizesAmount).length && Object.entries(prices).length && rI.length) {
+        if (name.length && sizesList.length && (Object.entries(sizesAmount).length && Object.entries(sizesAmount).length == sizesList.length) && (Object.entries(prices).length && Object.entries(prices).length == sizesList.length) && rI.length) {
             dsp("complete", { name, sizes: sizesList, amount: sizesAmount, price: prices, item_images: rI });
         }
         else {
