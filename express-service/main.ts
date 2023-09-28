@@ -292,11 +292,42 @@ app.post("/shop-items/:operation", async (req, res) => {
 
         case "get-all":
             {
-                const { shop_id } = req.body;
+                const { shop_id, items_images }: { shop_id: string, items_images: boolean } = req.body;
                 const qr = (await db.cDb.execute("select item_id, name, amount, prices_eur, sizes from items where shop_id = ?;", [shop_id], { prepare: true })).rows;
 
                 if (qr.length) {
-                    res.json({ results: qr });
+                    // Add images to response
+                    const images: { imgs?: { item_id: string, b: Buffer }[] } = {};
+                    if (items_images) {
+                        const p = `./temp/items/shop-${shop_id}`
+                        if (fs.existsSync(p)) {
+                            const dirC = fs.readdirSync(p);
+                            for (const rr of qr) {
+                                const itemId = rr.item_id;
+                                for (const c of dirC) {
+                                    let cItemId: string | string[] = c.split("-");
+                                    cItemId.splice(-1, 1);
+                                    cItemId = cItemId.join("-")
+
+                                    console.log(cItemId)
+                                    if (itemId == cItemId) {
+                                        // Create field for image content
+                                        !images.imgs ? images.imgs = [] : null;
+                                        
+                                        // Read file content
+                                        const imgC = fs.readFileSync(path.join(p, c));
+                                        
+                                        // Add to images new image object
+                                        const imgO: typeof images.imgs[0] = { item_id: itemId, b: imgC };
+
+                                        images.imgs.push(imgO);
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    res.json({ ...images, results: qr, });
                 }
                 else res.sendStatus(404);
             }
