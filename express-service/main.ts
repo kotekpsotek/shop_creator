@@ -239,10 +239,10 @@ app.post("/shop-items/:operation", async (req, res) => {
     switch (operation) {
         case "create-item":
             {
-                const { name, sizes, amount, price, shop_id, item_images }: { name: string, sizes: string[], amount: { [index: string]: number }, price: { [index: string]: number }, shop_id: string, item_images: { mime: string, bytes: number[] }[] } = req.body;
+                const { name, sizes, amount, price, shop_id, item_images, description }: { name: string, sizes: string[], amount: { [index: string]: number }, price: { [index: string]: number }, shop_id: string, item_images: { mime: string, bytes: number[] }[], description: string } = req.body;
                 const { uuid } = res.locals.appSes;
                 const verifiedPayload = (() => {
-                    return (name && sizes && amount && price && shop_id) && name?.length > 0 && sizes.length > 0 && Object.keys(amount).length == sizes.length && Object.keys(price).length == sizes.length;
+                    return (name && sizes && amount && price && shop_id && description) && name?.length > 0 && sizes.length > 0 && Object.keys(amount).length == sizes.length && Object.keys(price).length == sizes.length && description.trim().length;
                 })();
                 const verifiedShopOwner = await (async () => {
                     const q = await db.cDb.execute("select * from shops where owner_id = ?;", [uuid], { prepare: true }); // Get shops
@@ -270,7 +270,7 @@ app.post("/shop-items/:operation", async (req, res) => {
                 // Src action -> Only when: payload is correct and action purchaser is owner of shop
                 if (verifiedPayload && verifiedShopOwner && verifiedItemImages) {
                     const itemId = randomUUID();
-                    const ex = await db.cDb.execute("INSERT INTO items (shop_id, item_id, name, amount, prices_eur, sizes) values (?, ?, ?, ?, ?, ?);", [shop_id, itemId, name, amount, price, sizes], { prepare: true });
+                    const ex = await db.cDb.execute("INSERT INTO items (shop_id, item_id, name, amount, prices_eur, sizes, description) values (?, ?, ?, ?, ?, ?, ?);", [shop_id, itemId, name, amount, price, sizes, description], { prepare: true });
 
                     // Send event to RabbitMQ Queue 🐇
                     (await rabbitmq).channel.sendToQueue("created-shop-item", Buffer.from(JSON.stringify({itemId, shop_id})))
@@ -293,7 +293,7 @@ app.post("/shop-items/:operation", async (req, res) => {
         case "get-all":
             {
                 const { shop_id, items_images }: { shop_id: string, items_images: boolean } = req.body;
-                const qr = (await db.cDb.execute("select item_id, name, amount, prices_eur, sizes from items where shop_id = ?;", [shop_id], { prepare: true })).rows;
+                const qr = (await db.cDb.execute("select item_id, name, amount, prices_eur, sizes, description from items where shop_id = ?;", [shop_id], { prepare: true })).rows;
 
                 if (qr.length) {
                     // Add images to response
@@ -309,7 +309,6 @@ app.post("/shop-items/:operation", async (req, res) => {
                                     cItemId.splice(-1, 1);
                                     cItemId = cItemId.join("-")
 
-                                    console.log(cItemId)
                                     if (itemId == cItemId) {
                                         // Create field for image content
                                         !images.imgs ? images.imgs = [] : null;

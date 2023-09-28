@@ -124,10 +124,10 @@
                 {#await loadItems()}
                     <p>Loading items...</p>
                 {:then {imgs, results}}
-                    {#each results as { item_id, name, amount, prices_eur, sizes }}
+                    {#each results as { item_id, name, amount, prices_eur, sizes, description }}
                         <button class="card-offer" data-itid={item_id}>
                             <img src="" alt="Lack of img" use:preperObjectUrl={imgs.find(v => v.item_id == item_id)?.b}>
-                            <p id="desc">Decs</p>
+                            <p id="desc">{description || "From some reason description don't occur"}</p>
                             {#if Object.entries(prices_eur).length == 1}
                                 <p class="price">
                                     <span class="sgn">&#36</span>

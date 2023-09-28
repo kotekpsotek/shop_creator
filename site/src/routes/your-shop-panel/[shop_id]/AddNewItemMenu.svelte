@@ -14,6 +14,7 @@
     let sizesAmount: { [index: string]: number } = {};
     let prices: { [index: string]: number } = {};
     let files: File[] = [];
+    let description: string = ""
 
     let sizeAmount: number = 1;
     function acceptSizeAmount() {
@@ -207,8 +208,8 @@
             rI = [...rI, await p]
         }
 
-        if (name.length && sizesList.length && (Object.entries(sizesAmount).length && Object.entries(sizesAmount).length == sizesList.length) && (Object.entries(prices).length && Object.entries(prices).length == sizesList.length) && rI.length) {
-            dsp("complete", { name, sizes: sizesList, amount: sizesAmount, price: prices, item_images: rI });
+        if (name.length && sizesList.length && (Object.entries(sizesAmount).length && Object.entries(sizesAmount).length == sizesList.length) && (Object.entries(prices).length && Object.entries(prices).length == sizesList.length) && rI.length && (description.length >= 25 && description.length <= 450)) {
+            dsp("complete", { name, sizes: sizesList, amount: sizesAmount, price: prices, item_images: rI, description });
         }
         else {
             alert("Fullfill all required fields")
@@ -353,6 +354,13 @@
                     </div>
                 </div>
             {/if}
+        </div>
+        <div class="card variant-ringed p-2 flex flex-col gap-y-2">
+            <h3 class="h3 font-semibold capitalize">
+                <span class="text-primary-500 select-none">*</span>
+                5th: Description
+            </h3>
+            <textarea class="textarea" minlength="25" maxlength="450" rows="5" placeholder="[This item is amazing]..." bind:value={description}></textarea>
         </div>
         <button class="accept btn capitalize variant-filled-primary" on:click={addItem}>Add item</button>
     </div>
