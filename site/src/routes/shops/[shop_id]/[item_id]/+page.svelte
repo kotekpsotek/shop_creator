@@ -2,6 +2,8 @@
     import { Favorite } from "carbon-icons-svelte";
     import type { PageData } from "./$types";
     import { Gallery } from "flowbite-svelte";
+    import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
+    import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
     const image1 = {
         alt: 'erbology',
         src: 'https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg'
@@ -30,6 +32,7 @@
     const pI = new Prices(data.text[0].prices_eur);
 </script>
 
+<RemarkableWhiteBlackLayoutUpbar/>
 <div class="backgr w-screen h-screen flex flex-col bg-white text-black lg:flex-row lg:gap-x-2 lg:px-10 overflow-x-hidden overflow-y-auto">
     <div class="images w-screen h-4/5 bg-slate-100 lg:h-full lg:w-3/5">
         <img src={image1.src} alt={image1.alt} class="h-4/5 object-contain max-w-full rounded-lg"/>
