@@ -134,7 +134,50 @@ app.get("/shop-frontend-info/:shop_id", async ({ params: { shop_id }, ...req }, 
     catch(_) {
         res.sendStatus(404);
     }
-})
+});
+
+// Get all valulabe information about particular shop item
+app.get("/shop-item-details/:shop_id/:item_id", async ({ params: { shop_id, item_id }, ...req }, res) => {
+    if (shop_id.length && item_id.length) {
+        const q = await db.cDb.execute("select name, description, prices_eur, sizes from items where item_id = ? and shop_id = ?", [item_id, shop_id], { prepare: true });
+        console.log(q.rows)
+
+        if (q) {
+            const response: { [index: string]: any } = { text: q.rows };
+            function getItemImages() {
+                const pSi = path.join(".", "temp", "items", `shop-${shop_id}`);
+                const dfSi = fs.readdirSync(pSi);
+                
+                if (dfSi.length) {
+                    const results: { number: number, data: Buffer }[] = []
+
+                    for (const itemName of dfSi) {
+                        const fName = itemName.match(/^[^\.+]+/gi)![0];
+                        const itemId = fName.split("-").slice(0, -1).join("-");
+
+                        if (itemId == item_id) {
+                            const pI = path.join(pSi, itemName);
+                            const buff = fs.readFileSync(pI);
+                            
+                            results.push({ number: Number(fName.match(/\d+$/g)), data: buff })
+                        }
+                    }
+
+                    return results;
+                }
+                
+                return;
+            }
+
+            const call = getItemImages();
+            call ? response.images = call : null;
+
+            res.json(response);
+        }
+        else res.sendStatus(404);
+    }
+    else res.sendStatus(400);
+});
 
 // Handle actions only for logged in users 
 // For call all actions below: User must be firstly logged in
