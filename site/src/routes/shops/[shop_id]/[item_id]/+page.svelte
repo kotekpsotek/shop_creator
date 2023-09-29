@@ -2,7 +2,6 @@
     import { Favorite } from "carbon-icons-svelte";
     import type { PageData } from "./$types";
     import { Gallery } from "flowbite-svelte";
-    import RemarkableWhiteBlackLayout from "$lib/layouts/remarkableWhiteBlack_layout.svelte";
     import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
     const image1 = {
         alt: 'erbology',
@@ -28,8 +27,30 @@
             const pA  = Object.values(this.prices);
             return Math.min(...pA);
         }
+
+        getPriceForSize(size: string) {
+            return this.prices[size];
+        }
     }
     const pI = new Prices(data.text[0].prices_eur);
+
+    let selectedSize: string | undefined;
+    let actualPriceG: number | undefined;
+    $: if (selectedSize) {
+        const actualPrice = pI.getPriceForSize(selectedSize);
+        actualPriceG = actualPrice;
+    } else {
+        actualPriceG = undefined;
+    }
+
+    function pickUpSize(size: string) {
+        return (ev: Event) => {
+            if (selectedSize == size) {
+                selectedSize = undefined
+            }
+            else selectedSize = size;
+        }
+    }
 </script>
 
 <RemarkableWhiteBlackLayoutUpbar/>
@@ -45,15 +66,17 @@
         {:else}
             <p class="text-base" style="font-family: futura-pt-light;">Lorem ipsum dolor set</p>
         {/if}
-        <p class="text-xl mt-2" style="font-family: futura-pt-light;">From: &euro;{pI.getTheSmallest()}</p>
+        <p id="price" class="text-xl mt-2" style="font-family: futura-pt-light;">{!actualPriceG ? "From:" : ""} &euro;{actualPriceG || pI.getTheSmallest()}</p>
         <div class="w-full h-fit flex flex-col gap-y-2 mt-2">
             <p class="text-sm">Sizes</p>
             <div class="flex flex-wrap gap-2">
-                {#each data.text[0].sizes as size}
-                    <button class="border-2 rounded border-gray-300 text-sm w-12 h-12 uppercase hover:bg-black hover:text-white hover:border-black transition-all transition-75" style="font-family: futura-pt-light;">
-                        {size}
-                    </button>
-                {/each}
+                {#key selectedSize}
+                    {#each data.text[0].sizes as size}
+                        <button class:selected-size={selectedSize == size} class="border-2 rounded border-gray-300 text-sm w-12 h-12 uppercase hover:bg-black hover:text-white hover:border-black transition-all transition-75" style="font-family: futura-pt-light;" on:click={pickUpSize(size)}>
+                            {size}
+                        </button>
+                    {/each}
+                {/key}
             </div>
         </div>
         <div class="flex gap-5 items-center mt-5">
@@ -72,5 +95,11 @@
 
     .backgr::-webkit-scrollbar {
         background-color: white !important;
+    }
+
+    button.selected-size {
+        background-color: black !important;
+        color: white !important;
+        border-color: black;
     }
 </style>
