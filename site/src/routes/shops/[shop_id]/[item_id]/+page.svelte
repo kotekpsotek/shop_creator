@@ -3,6 +3,8 @@
     import type { PageData } from "./$types";
     import { Gallery } from "flowbite-svelte";
     import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
+    import { orderBasket } from "$lib/inter_stores";
+    import ItemAddedToBasket from "./ItemAddedToBasket.svelte";
     const image1 = {
         alt: 'erbology',
         src: 'https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg'
@@ -45,11 +47,24 @@
 
     function pickUpSize(size: string) {
         return (ev: Event) => {
+            selectSizeRequired = false;
             if (selectedSize == size) {
                 selectedSize = undefined
             }
             else selectedSize = size;
         }
+    }
+
+    let selectSizeRequired: boolean = false;
+    function addToOrder() {
+        if (selectedSize) {
+            selectSizeRequired = false;
+            $orderBasket = [...$orderBasket, { size: selectedSize, price: pI.getPriceForSize(selectedSize), name: data.text[0].name, description: data.text[0].description }]
+            const nItem = new ItemAddedToBasket({
+                target: document.body
+            })
+        }
+        else selectSizeRequired = true;
     }
 </script>
 
@@ -69,18 +84,25 @@
         <p id="price" class="text-xl mt-2" style="font-family: futura-pt-light;">{!actualPriceG ? "From:" : ""} &euro;{actualPriceG || pI.getTheSmallest()}</p>
         <div class="w-full h-fit flex flex-col gap-y-2 mt-2">
             <p class="text-sm">Sizes</p>
-            <div class="flex flex-wrap gap-2">
-                {#key selectedSize}
-                    {#each data.text[0].sizes as size}
-                        <button class:selected-size={selectedSize == size} class="border-2 rounded border-gray-300 text-sm w-12 h-12 uppercase hover:bg-black hover:text-white hover:border-black transition-all transition-75" style="font-family: futura-pt-light;" on:click={pickUpSize(size)}>
-                            {size}
-                        </button>
-                    {/each}
-                {/key}
+            <div class="flex flex-col gap-2">
+                <div class="flex flex-wrap gap-2">
+                    {#key selectedSize}
+                        {#each data.text[0].sizes as size}
+                            <button class:selected-size={selectedSize == size} class="border-2 rounded border-gray-300 text-sm w-12 h-12 uppercase hover:bg-black hover:text-white hover:border-black transition-all transition-75" style="font-family: futura-pt-light;" on:click={pickUpSize(size)}>
+                                {size}
+                            </button>
+                        {/each}
+                    {/key}
+                </div>
+                <div class="w-full flex">
+                    {#if selectSizeRequired}
+                        <p class="text-red-500 text-bold">Size selection is required to go further</p>
+                    {/if}
+                </div>
             </div>
         </div>
         <div class="flex gap-5 items-center mt-5">
-            <button class="h-12 w-full text-white bg-black rounded hover:bg-rose-400 transition-all duration-75">Add to order</button>
+            <button class="h-12 w-full text-white bg-black rounded hover:bg-rose-400 transition-all duration-75" on:click={addToOrder}>Add to order</button>
             <button class="h-12 w-20 border-2 rounded border-black flex justify-center items-center">
                 <Favorite size={24}/>
             </button>

@@ -46,4 +46,4 @@ export const shopCreationStore = (function() {
 })()
 
 // Place where are store all orders
-export const orderBasket = writable<{ name: string, description: string, size: string, price: number }>();
+export const orderBasket = writable<{ name: string, description: string, size: string, price: number }[]>([]);
