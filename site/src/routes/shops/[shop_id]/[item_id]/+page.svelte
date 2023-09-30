@@ -18,6 +18,77 @@
     ];
     export let data: PageData;
 
+    interface OneImg {
+        alt: string,
+        src: string
+    }
+    class Images {
+        /** First image */
+        first?: OneImg;
+        /** Next images others then first */
+        nextsUlrs?: OneImg[]
+        
+        constructor() {
+            // Get first and next images
+            const f = this.getFirst();
+            const o =  this.getOthers(f || Object.create(null));
+
+            if (f) {
+                this.first = this.mapToOneImg(f, "No img") as OneImg;
+            }
+
+            if (o) {
+                this.nextsUlrs = this.mapToOneImg(o, "No img") as OneImg[];
+            }
+        }
+
+        /** Obtian first image */
+        private getFirst() {
+            const smallest = data.images?.reduce((p, c) => {
+                return p.number < c.number ? p : c;
+            });
+            return smallest;
+        }
+
+        /** Get other images then first one */
+        private getOthers(f: NonNullable<typeof data.images>[0]) {
+            return data.images?.filter(v => {
+                return v.number != f.number;
+            })
+        }
+
+        /** Map object to input required by flowbite galery component 
+         * It's suitable for both first and other obtained images in preceding steps
+        */
+        private mapToOneImg(nm: NonNullable<typeof data.images>[0] | NonNullable<typeof data.images>, alt: string): OneImg | OneImg[] {
+            const mapWorthSrc = (cnt: NonNullable<typeof data.images>[0]) => {
+                const bf = cnt.data.data;
+                const ab = new Uint8Array(bf);
+                const blb = new Blob([ab]);
+                const oUrl = URL.createObjectURL(blb);
+                const newObject = {
+                    alt,
+                    src: oUrl
+                } satisfies OneImg;
+
+                return newObject;
+            }
+            if (nm instanceof Array) {
+                const rs = [] as OneImg[];
+                for (const object of nm) {
+                    const mappedO = mapWorthSrc(object);
+                    rs.push(mappedO)
+                };
+                return rs;
+            }
+            else {
+                return mapWorthSrc(nm);
+            }
+        }
+    }
+    
+    console.log(data.images)
+    const imgs = new Images();
     class Prices {
         prices: { [size: string]: number }
         
@@ -62,7 +133,7 @@
             $orderBasket = [...$orderBasket, { size: selectedSize, price: pI.getPriceForSize(selectedSize), name: data.text[0].name, description: data.text[0].description }]
             const nItem = new ItemAddedToBasket({
                 target: document.body
-            })
+            });
         }
         else selectSizeRequired = true;
     }
@@ -71,8 +142,10 @@
 <RemarkableWhiteBlackLayoutUpbar/>
 <div class="backgr w-screen h-screen flex flex-col bg-white text-black lg:flex-row lg:gap-x-2 lg:px-10 overflow-x-hidden overflow-y-auto">
     <div class="images w-screen h-4/5 bg-slate-100 lg:h-full lg:w-3/5">
-        <img src={image1.src} alt={image1.alt} class="h-4/5 object-contain max-w-full rounded-lg"/>
-        <Gallery class="h-1/5 grid-cols-5 items-center" items={images2}/>
+        <img src={imgs.first?.src} alt={imgs.first?.alt || "No img"} class="h-4/5 object-contain max-w-full rounded-lg" style:height={!imgs.nextsUlrs?.length ? "100%" : null}/>
+        {#if imgs.nextsUlrs?.length}
+            <Gallery class="h-1/5 grid-cols-5 items-center" items={images2}/>
+        {/if}
     </div>
     <div class="w-full h-1/5 w-2/4 pt-7 px-2 lg:h-full lg:w-2/5">
         <p class="text-2xl font-bold">{data.text[0].name}</p>
