@@ -134,6 +134,8 @@
             const nItem = new ItemAddedToBasket({
                 target: document.body
             });
+
+            nItem.$on("close", () => nItem.$destroy())
         }
         else selectSizeRequired = true;
     }
@@ -184,6 +186,11 @@
 </div>
 
 <style>
+    .backgr {
+        width: 100vw;
+        height: calc(100vh - 50px); /* Heigth - upper bar heigth */
+    }
+    
     .backgr * {
         font-family: futura-pt,sans-serif;
     }
