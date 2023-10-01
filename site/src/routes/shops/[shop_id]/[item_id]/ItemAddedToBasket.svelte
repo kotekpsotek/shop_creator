@@ -1,6 +1,9 @@
 <script lang="ts">
-    import { onDestroy, onMount } from "svelte";
+    import { onDestroy, onMount, createEventDispatcher } from "svelte";
+    import { page } from "$app/stores";
+    import { goto } from "$app/navigation";
 
+    const dsp = createEventDispatcher();
     const e = document.getElementsByClassName("backgr")[0] as HTMLDivElement;
     onMount(() => {
         e.style.overflow = "hidden !important";
@@ -11,14 +14,23 @@
         (e.style.overflow as any) = null;
         (document.body.style.overflow as any)= null;
     });
+ 
 
-    // TODO:
-    function toItemsOfShop() {
+    // Go to default shop page
+    async function toItemsOfShop() {
+        if (!$page.params.shop_id) {
+            throw "Cannot obtain shop identifier. This action is required to pass to go to shop";
+        }
 
+        const location = `/shops/${$page.params.shop_id}`;
+        dsp("close");
+        await goto(location);
     }
 
-    function toOrderBasket() {
-
+    // Go to order basket
+    async function toOrderBasket() {
+        dsp("close");
+        await goto("/order/basket")
     }
 </script>
 
