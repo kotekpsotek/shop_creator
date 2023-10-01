@@ -1,9 +1,18 @@
 <script lang="ts">
     import { Favorite, Menu, Search, ShoppingBag } from "carbon-icons-svelte";
+    import { Indicator } from "flowbite-svelte";
+    import { orderBasket } from "$lib/inter_stores";
+    import { goto } from "$app/navigation";
     let upBarIconHeight = 30 as 32;
-    import logo from "$lib/images/layouts/remarkable-black-white/Your Shop Logo.png"
+    import logo from "$lib/images/layouts/remarkable-black-white/Your Shop Logo.png";
+
+    export let classes = "";
+
+    async function goToBasket() {
+       await goto("/order/basket") ;
+    }
 </script>
-<div class="upbar">
+<div class="upbar {classes}">
     <button id="Menu">
         <Menu size={upBarIconHeight} fill="black"/>
     </button>
@@ -14,8 +23,11 @@
     <button id="search">
         <Search size={upBarIconHeight} fill="black"/>
     </button>
-    <button id="bag">
+    <button id="bag" class="relative" on:click={goToBasket}>
         <ShoppingBag size={upBarIconHeight} fill="black"/>
+        {#if $orderBasket.length}
+            <Indicator color="dark" border size="xl" placement="bottom-right" class="text-xs font-ftl font-bold">{$orderBasket.length}</Indicator>
+        {/if}
     </button>
 </div>
 

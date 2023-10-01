@@ -29,7 +29,7 @@
     onDestroy(async () => {
         // Save order baseket content
         saveOrderBasketState();
-    })
+    });
 
     onMount(async () => {
         // Load order basket content if exists

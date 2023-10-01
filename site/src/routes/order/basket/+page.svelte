@@ -33,7 +33,7 @@
     }
 </script>
 
-<RemarkableWhiteBlackLayoutUpbar/>
+<RemarkableWhiteBlackLayoutUpbar classes="lg:px-10"/>
 {#if $orderBasket.length}
     {#key $orderBasket}
         <section class="w-screen h-screen p-2 bg-gray-200 text-black lg:px-10 flex flex-col lg:flex-row lg:gap-x-5 font-ft">
