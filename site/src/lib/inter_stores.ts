@@ -47,3 +47,10 @@ export const shopCreationStore = (function() {
 
 // Place where are store all orders
 export const orderBasket = writable<{ image_url: string, name: string, description: string, size: string, price: number }[]>([]);
+
+export function saveOrderBasketState() {
+    orderBasket.subscribe(v => {
+        const obP = JSON.stringify({ v });
+        localStorage.setItem("order-basket", obP);
+    })
+}

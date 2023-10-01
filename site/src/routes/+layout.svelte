@@ -4,6 +4,8 @@
     import { AppBar } from "@skeletonlabs/skeleton";
     import { navigating } from "$app/stores";
     import { goto } from "$app/navigation"
+    import { orderBasket, saveOrderBasketState } from "$lib/inter_stores";
+    import { onDestroy, onMount } from "svelte";
 
     const url = new URL(document.URL);
 
@@ -18,10 +20,29 @@
             }
         }
     }
+
+    $: if ($navigating) {
+        // Save order basket state
+        saveOrderBasketState();
+    }
+
+    onDestroy(async () => {
+        // Save order baseket content
+        saveOrderBasketState();
+    })
+
+    onMount(async () => {
+        // Load order basket content if exists
+        const i = localStorage.getItem("order-basket");
+        if (i) {
+            const pI = JSON.parse(i);
+            orderBasket.set(pI.v);
+        }
+    });
 </script>
 
 {#key $navigating}
-    {#if !new URL(document.URL).pathname.includes("layouts_preview") && !new URL(document.URL).pathname.includes("shops/")}
+    {#if !new URL(document.URL).pathname.includes("layouts_preview") && !new URL(document.URL).pathname.includes("shops/") && !new URL(document.URL).pathname.includes("order/")}
         <div class="w-full sticky top-0 right-0 z-10">
             <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
                 <svelte:fragment slot="lead">(icon)</svelte:fragment>

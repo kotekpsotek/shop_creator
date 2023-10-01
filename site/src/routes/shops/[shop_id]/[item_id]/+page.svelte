@@ -130,7 +130,7 @@
     function addToOrder() {
         if (selectedSize) {
             selectSizeRequired = false;
-            $orderBasket = [...$orderBasket, { size: selectedSize, price: pI.getPriceForSize(selectedSize), name: data.text[0].name, description: data.text[0].description }]
+            $orderBasket = [...$orderBasket, { image_url: imgs.first?.src || "", size: selectedSize, price: pI.getPriceForSize(selectedSize), name: data.text[0].name, description: data.text[0].description }]
             const nItem = new ItemAddedToBasket({
                 target: document.body
             });
