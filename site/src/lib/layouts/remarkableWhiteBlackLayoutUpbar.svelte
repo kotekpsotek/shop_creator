@@ -3,7 +3,7 @@
     let upBarIconHeight = 30 as 32;
     import logo from "$lib/images/layouts/remarkable-black-white/Your Shop Logo.png"
 </script>
-<div class="upbar lg:px-10">
+<div class="upbar">
     <button id="Menu">
         <Menu size={upBarIconHeight} fill="black"/>
     </button>
@@ -24,7 +24,7 @@
         position: sticky;
         top: 0;
         right: 0;
-        width: 100vw;
+        width: 100%;
         height: 55px;
         display: flex;
         align-items: center;

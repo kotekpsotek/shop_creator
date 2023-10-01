@@ -5,6 +5,7 @@
     import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
     import { orderBasket } from "$lib/inter_stores";
     import ItemAddedToBasket from "./ItemAddedToBasket.svelte";
+    import { onMount } from "svelte";
     const image1 = {
         alt: 'erbology',
         src: 'https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg'
@@ -87,7 +88,6 @@
         }
     }
     
-    console.log(data.images)
     const imgs = new Images();
     class Prices {
         prices: { [size: string]: number }
@@ -139,6 +139,8 @@
         }
         else selectSizeRequired = true;
     }
+
+    onMount(() => document.body.style.overflowX = "hidden");
 </script>
 
 <RemarkableWhiteBlackLayoutUpbar/>
