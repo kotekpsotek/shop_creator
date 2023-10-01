@@ -38,8 +38,12 @@ const config = {
 					800: '#CC4522',
 					900: '#A5371B'
 				  }
-			}
+			},
 		},
+		fontFamily: {
+			'ft': ['futura-pt', 'sans-serif'],
+			'ftl': ['futura-pt-light', 'sans-serif'],
+		}
 	},
 	plugins: [
 		skeleton({
@@ -47,7 +51,8 @@ const config = {
 		}),
 		forms,
 		flowbite
-	]
+	],
+	important: true
 } satisfies Config;
 
 export default config;

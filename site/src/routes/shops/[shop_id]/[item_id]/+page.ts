@@ -4,7 +4,7 @@ export const load = async ({ params: { item_id, shop_id } }) => {
     const f = await fetch(`http://localhost:8100/shop-item-details/${shop_id}/${item_id}`);
 
     if (f.status == 200) {
-        const { images, text } = await f.json();
+        const { images, text }: { images: { number: number, data: { type: "Buffer", data: number[] } }[], text: any } = await f.json();
         return {
             images,
             text
