@@ -6,6 +6,7 @@
     let upBarIconHeight = 30 as 32;
     import logo from "$lib/images/layouts/remarkable-black-white/Your Shop Logo.png";
     import RemarkableBlackWhiteSearch from "./remarkableBlackWhiteSearch.svelte";
+    import RemarkableBlackWhiteWishList from "./remarkableBlackWhiteWishList.svelte";
 
     export let classes = "";
 
@@ -27,13 +28,31 @@
         }
         else {s.$destroy(); s = undefined};
     }
+
+    let w: RemarkableBlackWhiteWishList | undefined;
+    function wishList() {
+        if (!w) {
+            w = new RemarkableBlackWhiteWishList({
+                target: document.body
+            })
+
+            w.$on("close", () => {
+                w?.$destroy();
+                w = undefined;
+            });
+        }
+        else {
+            w.$destroy();
+            w = undefined;
+        }
+    }
 </script>
 <div class="upbar z-30 {classes}">
     <button id="Menu">
         <Menu size={upBarIconHeight} fill="black"/>
     </button>
     <img src="{logo}" alt="" title="logo">
-    <button id="wish-list">
+    <button id="wish-list" on:click={wishList}>
         <Favorite size={upBarIconHeight} fill="black"/>
     </button>
     <button id="search" on:click={search} class:bg-gray-300={s}>

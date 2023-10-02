@@ -1,17 +1,17 @@
 <script lang="ts">
     import { Menu, Favorite, Search, ShoppingBag, ChartBullet } from "carbon-icons-svelte";
-    import logo from "$lib/images/layouts/remarkable-black-white/Your Shop Logo.png"
     import prv1 from "$lib/images/layouts/remarkable-black-white/products-ex/mini-blue/p1.jpg"
     import prv2 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semiblue/p1.jpg"
     import prv3 from "$lib/images/layouts/remarkable-black-white/products-ex/black-semi-mid-blue/p1.jpg"
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import Error from "../../routes/+error.svelte";
+    import { goto } from "$app/navigation";
+    import RemarkableWhiteBlackLayoutUpbar from "./remarkableWhiteBlackLayoutUpbar.svelte";
     
     export let previewMode: boolean = false;
     const maximumItemsPerPage = 25; // How much items can occur on one page
     
-    let upBarIconHeight = 30 as 32;
     let pageNumber = 1; // Actual page number
 
     async function loadItems() {
@@ -56,24 +56,18 @@
         prc1.textContent = String(prMin);
         prc2.textContent = String(prMax);
     }
+
+    // Redirect user to specific shop
+    function goToShop(itemId: string) {
+        return async (e: any) => {
+            console.log("c")
+            await goto(`/shops/${$page.params.shop_id}/${itemId}`);
+        }; 
+    }
 </script>
 
 <div class="app" class:preview-mode={previewMode}>
-    <div class="upbar">
-        <button id="Menu">
-            <Menu size={upBarIconHeight}/>
-        </button>
-        <img src="{logo}" alt="" title="logo">
-        <button id="wish-list">
-            <Favorite size={upBarIconHeight}/>
-        </button>
-        <button id="search">
-            <Search size={upBarIconHeight}/>
-        </button>
-        <button id="bag">
-            <ShoppingBag size={upBarIconHeight}/>
-        </button>
-    </div>
+    <RemarkableWhiteBlackLayoutUpbar/>
     <div class="category">
         <div class="cat-header">
             <div class="t-fl">
@@ -125,8 +119,9 @@
                     <p>Loading items...</p>
                 {:then {imgs, results}}
                     {#each results as { item_id, name, amount, prices_eur, sizes, description }}
-                        <button class="card-offer" data-itid={item_id}>
+                        <button class="card-offer" data-itid={item_id} on:click={goToShop(item_id)}>
                             <img src="" alt="Lack of img" use:preperObjectUrl={imgs.find(v => v.item_id == item_id)?.b}>
+                            <p class="font-bold text-base" id="name">{name}</p>
                             <p id="desc">{description || "From some reason description don't occur"}</p>
                             {#if Object.entries(prices_eur).length == 1}
                                 <p class="price">
@@ -175,38 +170,6 @@
         height: 100%;
         overflow-y: auto;
     }
-
-    .upbar {
-        height: 55px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    button {
-        outline: none;
-        border: none;
-        background-color: transparent;
-    }
-
-    .upbar img {
-        height: 100%;
-        width: calc(100% - 4 * 25px - 50px);
-        object-fit: contain;
-    }
-
-    .upbar button {
-        width: 35px;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .upbar button:not(#Menu, .bag) {
-        margin-right: 10px;
-    }
-
     .category {
         width: 100%;
         min-height: 100%;
