@@ -5,14 +5,30 @@
     import { goto } from "$app/navigation";
     let upBarIconHeight = 30 as 32;
     import logo from "$lib/images/layouts/remarkable-black-white/Your Shop Logo.png";
+    import RemarkableBlackWhiteSearch from "./remarkableBlackWhiteSearch.svelte";
 
     export let classes = "";
 
     async function goToBasket() {
        await goto("/order/basket") ;
     }
+
+    let s: RemarkableBlackWhiteSearch | undefined;
+    function search() {
+        if (!s) {
+            s = new RemarkableBlackWhiteSearch({
+                target: document.body
+            });
+
+            s.$on("close", _ => {
+                s?.$destroy();
+                s = undefined;
+            })
+        }
+        else {s.$destroy(); s = undefined};
+    }
 </script>
-<div class="upbar {classes}">
+<div class="upbar z-30 {classes}">
     <button id="Menu">
         <Menu size={upBarIconHeight} fill="black"/>
     </button>
@@ -20,7 +36,7 @@
     <button id="wish-list">
         <Favorite size={upBarIconHeight} fill="black"/>
     </button>
-    <button id="search">
+    <button id="search" on:click={search} class:bg-gray-300={s}>
         <Search size={upBarIconHeight} fill="black"/>
     </button>
     <button id="bag" class="relative" on:click={goToBasket}>
