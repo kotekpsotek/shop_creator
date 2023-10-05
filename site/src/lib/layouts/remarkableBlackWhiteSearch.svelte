@@ -4,13 +4,13 @@
     import { Search, Button } from "flowbite-svelte";
     import { createEventDispatcher } from "svelte";
     import { createImageUrlFromBytesBuffer } from "$lib/api";
+    import { selectedShopId } from "$lib/inter_stores";
     const dsp = createEventDispatcher();
 
     interface SeekResult {
         name: string,
         price: string,
         id: string,
-        shop_id: string,
         image: {
             data: number[]
         }
@@ -28,7 +28,7 @@
 
     const search = async () => {
         currentState = "search";
-        const sTry = await fetch(`http://localhost:8100/search_in_shop?search=${searchVal}`, {
+        const sTry = await fetch(`http://localhost:8100/search_in_shop/${$selectedShopId}?search=${searchVal}`, { // TODO:
             method: "POST",
         });
 
@@ -43,9 +43,9 @@
         }, 500);
     }
 
-    function goToItem(item_id: string, shopId: string) {
+    function goToItem(item_id: string) {
         return async () => {
-            await goto(`/shops/${shopId}/${item_id}`);
+            await goto(`/shops/${$selectedShopId}/${item_id}`);
         }
     }
 
@@ -71,7 +71,7 @@
             </div>
         {:else if currentState == "results"}
             {#each seeked as seek}
-                <button on:click={goToItem(seek.id, seek.shop_id)}>
+                <button on:click={goToItem(seek.id)}>
                     <img src="" alt="" use:makeImg={seek.image}>
                     <div>
                         <p>{seek.name}</p>
