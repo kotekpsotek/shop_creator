@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { onDestroy, onMount } from "svelte";
+import { createImageUrlFromBytesBuffer } from "./api";
 
 // Store session id
 export const sessionID = writable<string>();
@@ -82,3 +82,32 @@ export function saveOrderBasketState() {
         localStorage.setItem("order-basket", obP);
     })
 }
+
+export const lovedItemsStore = (() => {
+    const w = writable<{ image_buf: number[], name: string, description: string, price: number }[]>([]);
+
+    return {
+        ...w,
+        createImageUrlFromBytesBuffer,
+        removeFavoriteItem(name: string) {
+            w.update(v => {
+                const id = v.findIndex(vv => vv.name == name);
+                v.splice(id, 1);
+                v = v;
+                return v;
+            })
+        },
+        load() {
+            w.update(v => {
+                v = JSON.parse(localStorage.getItem("loved-items") || "[]");
+                return v;
+            })
+        },
+        save() {
+            w.update(v => {
+                localStorage.setItem("loved-items", JSON.stringify(v));
+                return v;
+            })
+        }
+    }
+})();

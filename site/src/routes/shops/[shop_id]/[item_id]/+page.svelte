@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { Favorite } from "carbon-icons-svelte";
+    import { Favorite, FavoriteFilled } from "carbon-icons-svelte";
     import type { PageData } from "./$types";
     import { Gallery } from "flowbite-svelte";
     import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
-    import { orderBasket } from "$lib/inter_stores";
+    import { lovedItemsStore, orderBasket } from "$lib/inter_stores";
     import ItemAddedToBasket from "./ItemAddedToBasket.svelte";
     import { onMount } from "svelte";
     const image1 = {
@@ -44,7 +44,7 @@
         }
 
         /** Obtian first image */
-        private getFirst() {
+        getFirst() {
             const smallest = data.images?.reduce((p, c) => {
                 return p.number < c.number ? p : c;
             });
@@ -140,6 +140,19 @@
         else selectSizeRequired = true;
     }
 
+    /** Add/Remove item to/from vaforite ony when isn't on favorite list already */
+    function intoFavorite() {
+        const ob = { image_buf: imgs.getFirst()!.data.data, name: data.text[0].name, description: data.text[0].description, price: pI.getTheSmallest() };
+
+        if (!$lovedItemsStore.some(v => v.name == ob.name)) {
+            // Add
+            $lovedItemsStore = [...$lovedItemsStore, ob];
+        } else {
+            // Remove
+            lovedItemsStore.removeFavoriteItem(ob.name)
+        }
+    }
+
     onMount(() => document.body.style.overflowX = "hidden");
 </script>
 
@@ -180,8 +193,12 @@
         </div>
         <div class="flex gap-5 items-center mt-5">
             <button class="h-12 w-full text-white bg-black rounded hover:bg-rose-400 transition-all duration-75" on:click={addToOrder}>Add to order</button>
-            <button class="h-12 w-20 border-2 rounded border-black flex justify-center items-center">
-                <Favorite size={24}/>
+            <button class="h-12 w-20 border-2 rounded border-black flex justify-center items-center" class:is-favorite={$lovedItemsStore.some(v => v.name == data.text[0].name)} on:click={intoFavorite}>
+                {#if $lovedItemsStore.some(v => v.name == data.text[0].name)}
+                    <FavoriteFilled size={24}/>
+                {:else}
+                    <Favorite size={24}/>
+                {/if}
             </button>
         </div>
     </div>

@@ -4,7 +4,7 @@
     import { AppBar } from "@skeletonlabs/skeleton";
     import { navigating } from "$app/stores";
     import { goto } from "$app/navigation"
-    import { orderBasket, saveOrderBasketState, selectedShopId } from "$lib/inter_stores";
+    import { lovedItemsStore, orderBasket, saveOrderBasketState, selectedShopId } from "$lib/inter_stores";
     import { onDestroy, onMount } from "svelte";
 
     const url = new URL(document.URL);
@@ -26,14 +26,6 @@
         saveOrderBasketState();
     }
 
-    onDestroy(async () => {
-        // Save order baseket content
-        saveOrderBasketState();
-
-        // Save shop Id when is in storage
-        selectedShopId.save();
-    });
-
     onMount(async () => {
         // Load order basket content if exists
         const i = localStorage.getItem("order-basket");
@@ -41,6 +33,20 @@
             const pI = JSON.parse(i);
             orderBasket.set(pI.v);
         }
+
+        // Load loved items
+        lovedItemsStore.load();
+
+        window.addEventListener("pagehide", async () => {
+            // Save order baseket content
+            saveOrderBasketState();
+    
+            // Save shop Id when is in storage
+            selectedShopId.save();
+
+            // Save loved items
+            lovedItemsStore.save();
+        });
     });
 </script>
 
