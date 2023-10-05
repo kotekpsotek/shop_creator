@@ -13,7 +13,7 @@
         id: string,
         image: {
             data: number[]
-        }
+        } | null
     }
 
     type SeekResults = SeekResult[];
@@ -50,8 +50,10 @@
     }
 
     function makeImg(node: HTMLImageElement, image: SeekResult['image']) {
-        const ab = new Uint8Array(image.data);
-        node.src = createImageUrlFromBytesBuffer(ab);
+        if (image) {
+            const ab = new Uint8Array(image.data);
+            node.src = createImageUrlFromBytesBuffer(ab);
+        }
         return {};
     }
 </script>
