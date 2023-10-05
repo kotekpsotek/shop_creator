@@ -5,6 +5,8 @@
     import { page } from "$app/stores";
     import { goto } from "$app/navigation";
     import AddNewItemMenu from "./AddNewItemMenu.svelte";
+    import { selectedShopId } from "$lib/inter_stores";
+    import { onMount } from "svelte";
     let valueSingle: string;
     let appState: "main" | "manage items" | "manage shop" = "main"
     
@@ -89,6 +91,11 @@
             else alert("Cannot add item to your shop");
         });
     }
+
+    onMount(() => {
+        // Save shop id e.g: for search usage
+        $selectedShopId = $page.params.shop_id;
+    })
 </script>
 
 {#key refresh}

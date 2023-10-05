@@ -4,7 +4,7 @@
     import { AppBar } from "@skeletonlabs/skeleton";
     import { navigating } from "$app/stores";
     import { goto } from "$app/navigation"
-    import { orderBasket, saveOrderBasketState } from "$lib/inter_stores";
+    import { orderBasket, saveOrderBasketState, selectedShopId } from "$lib/inter_stores";
     import { onDestroy, onMount } from "svelte";
 
     const url = new URL(document.URL);
@@ -29,6 +29,9 @@
     onDestroy(async () => {
         // Save order baseket content
         saveOrderBasketState();
+
+        // Save shop Id when is in storage
+        selectedShopId.save();
     });
 
     onMount(async () => {

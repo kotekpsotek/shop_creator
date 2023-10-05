@@ -48,6 +48,34 @@ export const shopCreationStore = (function() {
 // Place where are store all orders
 export const orderBasket = writable<{ image_url: string, name: string, description: string, size: string, price: number }[]>([]);
 
+// Store shop Id
+export const selectedShopId = (() => {
+    const s = writable<string | undefined>();
+
+    // When was saved before
+    const shopId = localStorage.getItem("shop-id");
+    if (shopId) {
+        s.update(v => {
+            v = shopId;
+            
+            return v;
+        }) 
+    }
+
+    return {
+        ...s,
+        save() {
+            s.update(v => {
+                if (v) {
+                    localStorage.setItem("shop-id", v);
+                }
+                
+                return v;
+            })
+        }
+    }
+})();
+
 export function saveOrderBasketState() {
     orderBasket.subscribe(v => {
         const obP = JSON.stringify({ v });
