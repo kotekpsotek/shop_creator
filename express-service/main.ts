@@ -179,6 +179,87 @@ app.get("/shop-item-details/:shop_id/:item_id", async ({ params: { shop_id, item
     else res.sendStatus(400);
 });
 
+// Seek items in shop
+app.post("/search_in_shop/:shop_id", async ({ params, query }, res) => {
+    const s_id = params.shop_id;
+    const search = query.search;
+
+    const { rows } = await db.cDb.execute("SELECT item_id as id, name, description, prices_eur FROM items WHERE shop_id = ?;", [
+        s_id
+    ], { prepare: true });
+
+    if (rows.length) {
+        const find = rows.filter(v => {
+            return v.i_id == search || v.name?.includes(search) || v.description?.includes(search) ? true : false;
+        });
+
+
+        if (find.length) {
+            const p = path.join(".", "temp", "items", `shop-${s_id}`);
+            const dirC = fs.readdirSync(p);
+            const getFirsts = (() => {
+                let r: string[] = [];
+                dirC.forEach(v => {
+                    const rN = v.match(/(\d+)(?!.*\d)/g)
+                        ?.map(v => Number(v))[0];
+
+                    if (rN == 1) r.push(v);
+                })
+
+                return r;
+            })();
+            
+            function prepImg(out_id: string) {
+                let res: { id: string, img: Buffer } | undefined = undefined;
+                for (const i of getFirsts) {
+                    const id = i.split("-").slice(0, -1).join("-")
+                    if (out_id == id) {
+                        const fc = fs.readFileSync(path.join(p, i))
+                        res = { id, img: fc }
+                    }
+                }
+                return res;
+            };
+
+            /** Result of whole action */
+            const mapAsResult = (() => {
+                const results: any[] = []
+                for (const row of rows) {
+                    delete row.description;
+                    // Map prices_eur as price and delete all    
+                    if (row.prices_eur) {
+                        const v = Object.values(row.prices_eur as { [index: string]: number });
+
+                        if (v.length > 1) {
+                            const max = Math.max(...v);
+                            const min = Math.min(...v);
+
+                            row.price = `${min} &euro; - ${max} &euro;`;
+                        }
+                        else row.price = `${v[0]} &euro;`;
+                    }
+                    delete row.prices_eur;
+
+                    // Add image as image key
+                    const imgBuffer = prepImg(row.id)?.img;
+                    if (imgBuffer) {
+                        row.image = imgBuffer
+                    } 
+                    else row.image = null;
+
+                    results.push(row);
+                }
+
+                return results;
+            })();
+
+            res.status(200).json({ results: mapAsResult });
+        }
+        else res.sendStatus(404);
+    }
+    else res.sendStatus(404);
+})
+
 // Handle actions only for logged in users 
 // For call all actions below: User must be firstly logged in
 app.use(async (req, res, xt) => {
@@ -285,7 +366,7 @@ app.post("/shop-items/:operation", async (req, res) => {
                 const { name, sizes, amount, price, shop_id, item_images, description }: { name: string, sizes: string[], amount: { [index: string]: number }, price: { [index: string]: number }, shop_id: string, item_images: { mime: string, bytes: number[] }[], description: string } = req.body;
                 const { uuid } = res.locals.appSes;
                 const verifiedPayload = (() => {
-                    return (name && sizes && amount && price && shop_id && description) && name?.length > 0 && sizes.length > 0 && Object.keys(amount).length == sizes.length && Object.keys(price).length == sizes.length && description.trim().length;
+                    return (name && sizes && amount && price && shop_id && description) && name?.length > 0 && sizes.length > 0 && Object.keys(amount).length == sizes.length && Object.keys(price).length == sizes.length && description.trim().length ? true : false;
                 })();
                 const verifiedShopOwner = await (async () => {
                     const q = await db.cDb.execute("select * from shops where owner_id = ?;", [uuid], { prepare: true }); // Get shops
@@ -295,7 +376,8 @@ app.post("/shop-items/:operation", async (req, res) => {
                 })();
                 const verifiedItemImages = (() => {
                     const correctTypesMime = ["image/png", "image/webp", "image/jpeg"];
-                    return correctTypesMime.length > 0 && item_images.every(a => correctTypesMime.includes(a.mime));
+                    return correctTypesMime.length > 0 && item_images && item_images.every(a => correctTypesMime.includes(a.mime));
+                    // return true;
                 })();
                 const getMimeExt = (mime: string) => {
                     const correctTypesMime = ["image/png", "image/webp", "image/jpeg"];
