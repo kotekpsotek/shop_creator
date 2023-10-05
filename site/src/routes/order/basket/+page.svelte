@@ -1,8 +1,8 @@
 <script lang="ts">
     import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
-    import { TrashCan, Favorite } from "carbon-icons-svelte";
+    import { TrashCan, Favorite, FavoriteFilled } from "carbon-icons-svelte";
     import { Hr } from 'flowbite-svelte';
-    import { orderBasket } from "$lib/inter_stores";
+    import { orderBasket, lovedItemsStore } from "$lib/inter_stores";
     import { goto } from "$app/navigation";
     import { navigating } from "$app/stores";
     import { saveOrderBasketState } from "$lib/inter_stores";
@@ -31,6 +31,23 @@
             saveOrderBasketState(); // Resave state to supress re-call deleted item
         }
     }
+
+    /** Start or end loving this particular item */
+    function fallInOrFalloutOfLove(basketItem: typeof $orderBasket[0]) {
+        return () => {
+            if ($lovedItemsStore.some(v => v.name == basketItem.name)) {
+                lovedItemsStore.removeFavoriteItem(basketItem.name)
+            }
+            else {
+                $lovedItemsStore = [...$lovedItemsStore, {
+                    image_buf: [], // TODO: After re-write image to not be load from storage as url add here image int buffer, suitable for Uint8Array
+                    name: basketItem.name,
+                    description: basketItem.description,
+                    price: basketItem.price
+                }]
+            }
+        }
+    }
 </script>
 
 <RemarkableWhiteBlackLayoutUpbar classes="lg:px-10"/>
@@ -55,8 +72,12 @@
                                 <button id="undo-item" class="w-7 h-4 flex justify-center items-center" on:click={orderDelete(i)}>
                                     <TrashCan size={20}/>
                                 </button>
-                                <button id="favorite" class="w-7 h-4 flex justify-center items-center">
-                                    <Favorite size={20}/>
+                                <button id="favorite" class="w-7 h-4 flex justify-center items-center" title="{$lovedItemsStore.some(v => v.name == basket_it.name) ? "Terminate your love" : "Start your love"}" on:click={fallInOrFalloutOfLove(basket_it)}>
+                                    {#if $lovedItemsStore.some(v => v.name == basket_it.name)}
+                                        <FavoriteFilled size={20}/>
+                                    {:else}
+                                        <Favorite size={20}/>
+                                    {/if}
                                 </button>
                             </div>
                         </div>
