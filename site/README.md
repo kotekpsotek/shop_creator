@@ -1,38 +1,42 @@
-# create-svelte
+# Shop-Creating App
+Platoform for creating and maintaining online shops
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+## Database usage
 
-## Creating a project
+## **Tech Stack:**
+- Languages:
+    * Rust - For height efficient processing datas,
+    * JavaScript:
+        * TypeScript,
+        * Node.js,
+        * Svelte,
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Frameworks:
+    * JavaScript Frontend:
+        * Svelte,
+    * Node.js backend:
+        * Express.js
+    
+- Databases:
+    * Cassandra,
+    * MongoDB,
+    * Redis
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- Other Tools:
+    - Container's virtaulization:
+        - Docker,
+    - Message Broker:
+        - RabbitMQ with AMQP
+    
+    
+## Data base's cases:
+- *MongoDB* is for:
+    * Shop creator itself user account data saving in `users` collection,
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+- *Cassandra* is for:
+    - Use keyspace with name `shop_creator` where saves such tables:
+        * **`shop`** - which save data about each in app shop,
+        * **`items`** - which save data about items from each shop with meta data like ammount
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+- *Redis* is for:
+    - Store and take actions on each logged-in user session under key ``
