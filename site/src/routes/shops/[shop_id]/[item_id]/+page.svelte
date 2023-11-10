@@ -6,10 +6,6 @@
     import { lovedItemsStore, orderBasket } from "$lib/inter_stores";
     import ItemAddedToBasket from "./ItemAddedToBasket.svelte";
     import { onMount } from "svelte";
-    const image1 = {
-        alt: 'erbology',
-        src: 'https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg'
-    };
     const images2 = [
         { alt: 'shoes', src: 'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg' },
         { alt: 'small bag', src: 'https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg' },
@@ -153,15 +149,17 @@
         }
     }
 
-    onMount(() => document.body.style.overflowX = "hidden");
+    onMount(() => {
+        document.body.style.overflowX = "hidden";
+    });
 </script>
 
 <RemarkableWhiteBlackLayoutUpbar/>
 <div class="backgr w-screen h-screen flex flex-col bg-white text-black lg:flex-row lg:gap-x-2 lg:px-10 overflow-x-hidden overflow-y-auto">
-    <div class="images w-screen h-4/5 bg-slate-100 lg:h-full lg:w-3/5">
-        <img src={imgs.first?.src} alt={imgs.first?.alt || "No img"} class="h-4/5 object-contain max-w-full rounded-lg" style:height={!imgs.nextsUlrs?.length ? "100%" : null}/>
+    <div class="images w-screen h-fit bg-slate-100 lg:h-fit lg:w-3/5">
+        <img src={imgs.first?.src} alt={imgs.first?.alt || "No img"} class="h-1/5 object-contain rounded-lg" style:height={!imgs.nextsUlrs?.length ? "100%" : null}/>
         {#if imgs.nextsUlrs?.length}
-            <Gallery class="h-1/5 grid-cols-5 items-center" items={images2}/>
+            <Gallery class="h-1/5 grid-cols-5 items-center" items={imgs.nextsUlrs}/>
         {/if}
     </div>
     <div class="w-full h-1/5 w-2/4 pt-7 px-2 lg:h-full lg:w-2/5">
