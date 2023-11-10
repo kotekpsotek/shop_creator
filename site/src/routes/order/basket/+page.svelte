@@ -2,7 +2,7 @@
     import RemarkableWhiteBlackLayoutUpbar from "$lib/layouts/remarkableWhiteBlackLayoutUpbar.svelte";
     import { TrashCan, Favorite, FavoriteFilled } from "carbon-icons-svelte";
     import { Hr } from 'flowbite-svelte';
-    import { orderBasket, lovedItemsStore } from "$lib/inter_stores";
+    import { orderBasket, lovedItemsStore, selectedShopId } from "$lib/inter_stores";
     import { goto } from "$app/navigation";
     import { navigating } from "$app/stores";
     import { saveOrderBasketState } from "$lib/inter_stores";
@@ -101,7 +101,7 @@
                         <p>&euro;{(Number(totalOrderPrice()) + 6.00).toFixed(2)}</p>
                     </div>
                 </main>
-                <button id="checkout" class="w-full h-10 text-white bg-black rounded hover:bg-rose-400 transition-all duration-100" on:click={_ => goto("/order/checkout")}>Checkout</button>
+                <button id="checkout" class="w-full h-10 text-white bg-black rounded hover:bg-rose-400 transition-all duration-100" on:click={_ => goto("/order/checkout/"+$selectedShopId)}>Checkout</button>
             </section>
         </section>
     {/key}
