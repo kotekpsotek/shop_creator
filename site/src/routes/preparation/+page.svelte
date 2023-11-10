@@ -374,13 +374,13 @@
                     </div>
                 </button>
                 <button class="layout-btn p-2 card-hover variant-ringed rounded cursor-pointer flex flex-col gap-y-2 h-fit hover:variant-soft-primary" data-layout-name="ot" on:click={pickLayout("ot")} on:dblclick={_ => goto("/layouts_preview/remarkable-whiteblack")}>
-                    <p class="p text-xl font-serif font-normal">Remarkable White Black</p>
+                    <p class="p text-xl font-serif font-normal">Remarkable Navy-White Black</p>
                     <div class="preview flex flex-col gap-y-2">
                         <div class="w-full">
                             <p class="text-start text-base font-normal bg-gradient-to-br from-blue-500 to-cyan-300 bg-clip-text text-transparent box-decoration-clone capitalize">Short preview:</p>
                         </div>
                         <div class="p h-96">
-                            <RemarkableWhiteBlackLayout previewMode={true}/>
+                            <RemarkableWhiteBlackLayout previewMode={true} navywhite={true}/>
                         </div>
                     </div>
                 </button>

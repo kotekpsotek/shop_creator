@@ -10,6 +10,7 @@
     import RemarkableWhiteBlackLayoutUpbar from "./remarkableWhiteBlackLayoutUpbar.svelte";
     
     export let previewMode: boolean = false;
+    export let navywhite = false;
     const maximumItemsPerPage = 25; // How much items can occur on one page
     
     let pageNumber = 1; // Actual page number
@@ -66,8 +67,8 @@
     }
 </script>
 
-<div class="app" class:preview-mode={previewMode}>
-    <RemarkableWhiteBlackLayoutUpbar/>
+<div class="app" class:preview-mode={previewMode} class:navywhite={navywhite}>
+    <RemarkableWhiteBlackLayoutUpbar {navywhite}/>
     <div class="category">
         <div class="cat-header">
             <div class="t-fl">
@@ -170,6 +171,11 @@
         height: 100%;
         overflow-y: auto;
     }
+
+    .app.navywhite {
+        background-color: rgb(173, 208, 255);
+    }
+
     .category {
         width: 100%;
         min-height: 100%;

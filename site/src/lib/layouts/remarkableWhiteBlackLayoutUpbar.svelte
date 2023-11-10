@@ -9,6 +9,7 @@
     import RemarkableBlackWhiteWishList from "./remarkableBlackWhiteWishList.svelte";
 
     export let classes = "";
+    export let navywhite = false;
 
     async function goToBasket() {
        await goto("/order/basket") ;
@@ -47,7 +48,7 @@
         }
     }
 </script>
-<div class="upbar z-30 {classes}">
+<div class="upbar z-30 {classes}" class:navywhite={navywhite}>
     <button id="Menu">
         <Menu size={upBarIconHeight} fill="black"/>
     </button>
@@ -78,6 +79,10 @@
         justify-content: space-between;
         z-index: 10;
         background-color: white;
+    }
+
+    .upbar.navywhite {
+        background-color: rgb(173, 208, 255);
     }
 
     button {
