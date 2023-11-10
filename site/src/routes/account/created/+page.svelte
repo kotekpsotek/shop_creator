@@ -7,7 +7,7 @@
     }
 </script>
 
-<div class="w-full absolute top-0 right-0 h-screen flex flex-col justify-center items-center">
+<div class="w-full h-screen flex flex-col justify-center items-center">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div  on:click={goToLogin} class="card-hover cursor-pointer rounded p-4 w-4/5 variant-ghost-success md:w-2/5 h-fit flex flex-col gap-5 md:flex-row">

@@ -97,7 +97,7 @@
         <div class="flex flex-col gap-y-1">
             <p class="text-sm pl-2 font-thin">Password</p>
             <div class="input-group input-group-divider grid-cols-[auto_2fr_auto] h-9">
-                <button class="input-group-shim" on:click={showHide("pass")}>
+                <button type="button" class="input-group-shim" on:click={showHide("pass")}>
                     {#if showPass}
                         <View/>
                     {:else}

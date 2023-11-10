@@ -57,7 +57,7 @@
         <div class="flex flex-col gap-y-1">
             <p class="text-sm pl-2 font-thin">Password</p>
             <div class="input-group input-group-divider grid-cols-[auto_2fr_auto] h-9">
-                <button class="input-group-shim" on:click={showHide("pass")}>
+                <button type="button" class="input-group-shim" on:click={showHide("pass")}>
                     {#if showPass}
                         <View/>
                     {:else}
@@ -70,7 +70,7 @@
         <div class="flex flex-col gap-y-1">
             <p class="text-sm pl-2 font-thin">Password check</p>
             <div class="input-group input-group-divider grid-cols-[auto_2fr_auto] h-9">
-                <button class="input-group-shim" on:click={showHide("pass-chck")}>
+                <button type="button" class="input-group-shim" on:click={showHide("pass-chck")}>
                     {#if showPassChck}
                         <View/>
                     {:else}
@@ -83,41 +83,5 @@
         <div class="submit flex justify-end mt-2">
             <button disabled={!canSubmit} type="submit" class="btn bg-gradient-to-br variant-gradient-secondary-primary text-white px-10">Button</button>
         </div>
-        <!-- <div class="bilboard">
-            <div class="mb-6">
-                <Label for="email" class="mb-2">Email</Label>
-                <Input type="email" name="em" id="email" placeholder="youremail@email.com" required>
-                    <Email slot="left"/>
-                </Input>
-            </div>
-            <div class="mb-6">
-                <Label for="password" class="mb-2">Password</Label>
-                <Input type="{showPass ? "text" : "password"}" name="ps" minlength="10" maxlength="36" id="password" placeholder="•••••••••" required>
-                    <button slot="left" on:click={showHide("pass")}>
-                        {#if showPass}
-                            <View/>
-                        {:else}
-                            <ViewOff/>
-                        {/if}
-                    </button>
-                </Input>
-            </div>
-            <div class="mb-6">
-                <Label for="confirm_password" class="mb-2">Confirm password</Label>
-                <Input type="{showPassChck ? "text" : "password"}" minlength="10" maxlength="36" id="confirm_password" placeholder="•••••••••" required>
-                    <button slot="left" on:click={showHide("pass-chck")}>
-                        {#if showPassChck}
-                            <View/>
-                        {:else}
-                            <ViewOff/>
-                        {/if}
-                    </button>
-                </Input>
-            </div>
-            <Checkbox class="mb-6 space-x-1" required>
-                I agree with the <A href="/" class="text-primary-700 dark:text-primary-600 hover:underline">terms and conditions</A>.
-            </Checkbox>
-            <Button type="submit">Submit</Button>
-        </div> -->
     </div>
 </form>

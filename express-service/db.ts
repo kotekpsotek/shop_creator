@@ -10,9 +10,18 @@ rDb.connect();
 export const cDb = new cassandra.Client({
     keyspace: "shop_creator",
     contactPoints: ["127.0.0.1"],
-    localDataCenter: "datacenter1",
+    localDataCenter: "datacenter1"
 });
 cDb.connect();
+export interface CassandraShopItemsMap {
+    shop_id: string,
+    item_id: string,
+    name: string,
+    description: string,
+    amount: Map<string, number>,
+    prices_eur: Map<string, number>,
+    sizes: Set<string>
+}
 
 // Schemas
 export interface User {

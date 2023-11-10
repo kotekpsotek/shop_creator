@@ -61,4 +61,16 @@ router.post("/connect-shop", async (req, res) => {
     else res.sendStatus(404);
 });
 
+router.post("/pay-basket", async (req, res) => {
+    const { payment, address }: { payment: "blik" | "card", address: { voivideship: string, city: string } } = req.body;
+
+    if (payment && address.city && address.voivideship) {
+        // HERE can be payment handling but i wouldn't give somebody bussiness on my effort cost
+    }
+
+    res
+        .status(200)
+        .end();
+})
+
 export default router;

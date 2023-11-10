@@ -101,7 +101,7 @@
                         <p>&euro;{(Number(totalOrderPrice()) + 6.00).toFixed(2)}</p>
                     </div>
                 </main>
-                <button id="checkout" class="w-full h-10 text-white bg-black rounded hover:bg-rose-400 transition-all duration-100">Checkout</button>
+                <button id="checkout" class="w-full h-10 text-white bg-black rounded hover:bg-rose-400 transition-all duration-100" on:click={_ => goto("/order/checkout")}>Checkout</button>
             </section>
         </section>
     {/key}
